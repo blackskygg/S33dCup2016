@@ -65,7 +65,9 @@ vector<Token> Parser::parse(string s)
   decltype(str_begin) temp_it;
 
   while (str_begin < str_end) {
+    
     temp_it = str_begin;
+    max_len = 0;
     for (auto tpl: tokenTpls) {
       if (regex_search(str_begin, str_end, m, tpl.second, regex_constants::match_continuous)
 	  && m[0].length() >= max_len) {
@@ -75,11 +77,14 @@ vector<Token> Parser::parse(string s)
       }
       str_begin = temp_it;
     }
-    str_begin = temp_it + max_len;
-    cout<<"==================" << *str_begin<<endl;
+
     if (max_len) {
+      str_begin = temp_it + max_len;
       cout<<"{type: "<< type <<", length: "<< max_len<<"}"<<endl;
+    } else {
+      break;
     }
+
   }
   
   return result;
