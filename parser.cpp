@@ -52,6 +52,7 @@ Parser::Parser()
   tokenTpls.push_back(make_pair(COLON, token_regex(":")));
   tokenTpls.push_back(make_pair(COMMENT, token_regex("(/\\*.*?\\*/)|(//[^\r\n]*)")));
   tokenTpls.push_back(make_pair(NEWLINE, token_regex("\r\n")));
+  tokenTpls.push_back(make_pair(STRING_LITERAL, token_regex("\"(\\\\.|[^\"])*\"")));
 }
 
 vector<Token> Parser::parse(string s)

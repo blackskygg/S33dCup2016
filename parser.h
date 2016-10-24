@@ -31,6 +31,7 @@ enum TokenType {
   COMMA = 20,
   COMMENT = 21,
   NEWLINE = 22,
+  STRING_LITERAL = 23,
 };
 
 #endif
