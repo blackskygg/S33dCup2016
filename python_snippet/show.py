@@ -10,7 +10,7 @@ for curr_line in seq:
     print("-" * 80)
     for i, line in enumerate(lines):
         if i == curr_line:
-            print("\033[31m" + line + "\033[0m", end="")
+            print('>', i + 1, "\t\033[31m" + line + "\033[0m", end="")
         else:
-            print(line, end="")
+            print(i + 1, "\t" + line, end="")
     input()
