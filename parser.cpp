@@ -61,7 +61,7 @@ Parser::Parser()
   tokenTpls.push_back(make_pair(COLON, token_regex(":")));
   tokenTpls.push_back(make_pair(COMMA, token_regex(",")));
   tokenTpls.push_back(make_pair(COMMENT, token_regex("(/\\*.*?\\*/)|(//[^\r\n]*)")));
-  tokenTpls.push_back(make_pair(CRLF, token_regex("\n\n")));
+  tokenTpls.push_back(make_pair(CRLF, token_regex("\r\n")));
   tokenTpls.push_back(make_pair(STRING_LITERAL, token_regex("\"(\\\\.|[^\"])*\"")));
   
 }
@@ -70,7 +70,7 @@ int Parser::count_crlf(string s)
 {
   size_t pos = 0, len;
   int result = 0;
-  while (string::npos != (len = s.find("\n\n", pos))) {
+  while (string::npos != (len = s.find("\r\n", pos))) {
     result++;
     pos+=len;
   }
@@ -126,13 +126,23 @@ vector<Token> Parser::parse(string s)
 int main(int argc, char *argv[])
 {
   Parser parser;
-  char buf[1024];
-  size_t pos = 0;
+  char *buf = (char *)malloc(4 * 1024 * 1024);
+  size_t pos = 0, len;
+  FILE *fp;
 
-  while (!feof(stdin))
-    buf[pos++] = fgetc(stdin);
+
+  if (argc < 2)
+    return 0;
+
+  if (! (fp = fopen(argv[1], "rb")) )
+    return -1;
   
+  while (!feof(fp)) {
+    len = fread(buf + pos, 1, 512, fp);
+    pos += len;
+  }
   buf[pos] = '\0';
+  
   parser.parse(buf);
   
   return 0;
