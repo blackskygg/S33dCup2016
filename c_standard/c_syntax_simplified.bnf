@@ -25,6 +25,7 @@ stat			: exp_stat
 			| jump_stat
 			;
 jump_stat		: 'break' ';'
+			;
 exp_stat		: exp ';'
 			|	';'
 			;
