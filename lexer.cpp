@@ -22,11 +22,13 @@ Lexer::Lexer()
   tokenTpls.push_back(make_pair(LB, token_regex("\\{")));
   tokenTpls.push_back(make_pair(ADD, token_regex("\\+")));
   tokenTpls.push_back(make_pair(SUB, token_regex("-")));
-  tokenTpls.push_back(make_pair(STAR, token_regex("\\*")));
+  tokenTpls.push_back(make_pair(MUL, token_regex("\\*")));
+  tokenTpls.push_back(make_pair(DIV, token_regex("/")));
   tokenTpls.push_back(make_pair(DEC, token_regex("--")));
   tokenTpls.push_back(make_pair(INC, token_regex("\\+\\+")));
   tokenTpls.push_back(make_pair(ASSIGNMENT, token_regex("=")));
-  tokenTpls.push_back(make_pair(EQUAL, token_regex("=")));
+  tokenTpls.push_back(make_pair(EQ, token_regex("==")));
+  tokenTpls.push_back(make_pair(NE, token_regex("!=")));
   tokenTpls.push_back(make_pair(GE, token_regex(">=")));
   tokenTpls.push_back(make_pair(LE, token_regex("<=")));
   tokenTpls.push_back(make_pair(GT, token_regex(">")));
@@ -34,10 +36,9 @@ Lexer::Lexer()
   tokenTpls.push_back(make_pair(SEMICOLON, token_regex(";")));
   tokenTpls.push_back(make_pair(COLON, token_regex(":")));
   tokenTpls.push_back(make_pair(COMMA, token_regex(",")));
-  tokenTpls.push_back(make_pair(COMMENT, token_regex("(/\\*.*?\\*/)|(//[^\r\n]*)")));
+  tokenTpls.push_back(make_pair(COMMENT, token_regex("(/\\*(.|\r\n)*?\\*/)|(//[^\r\n]*)")));
   tokenTpls.push_back(make_pair(CRLF, token_regex("\r\n")));
   tokenTpls.push_back(make_pair(STRING_LITERAL, token_regex("\"(\\\\.|[^\"])*\"")));
-  tokenTpls.push_back(make_pair(STRING_LITERAL, token_regex("!=")));
 
 }
 
