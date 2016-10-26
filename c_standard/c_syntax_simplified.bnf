@@ -78,8 +78,6 @@ mult_exp		: unary_exp
 			| mult_exp '/' unary_exp
 			;
 unary_exp		: postfix_exp
-			| '++' unary_exp
-			| '--' unary_exp
 			| unary_operator unary_exp
 			;
 unary_operator		: '+' | '-'
