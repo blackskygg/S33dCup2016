@@ -40,9 +40,9 @@ enum token_type {
 
 struct token {
     enum token_type type;
-    char *token;
-    size_t token_len;
-    size_t line_num;
+    char *literal;
+    size_t length;
+    size_t line;
 };
 
 void token_regex_init();

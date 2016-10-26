@@ -29,7 +29,7 @@ int main(int argc, char const *argv[])
     size_t token_count = 0;
     while (*iter && *iter != EOF) {
         struct token t = token_scan(iter);
-        iter += t.token_len;
+        iter += t.length;
 
         if (t.type == SP || t.type == CRLF || t.type == COMMENT)
             continue;
@@ -39,9 +39,9 @@ int main(int argc, char const *argv[])
 
     for (size_t i = 0; i < token_count; i++) {
         printf("token: %d\t\"", tokens[i].type);
-        for (size_t j = 0; j < tokens[i].token_len; j++)
-            putchar(tokens[i].token[j]);
-        printf("\"\t%ld\n", tokens[i].line_num);
+        for (size_t j = 0; j < tokens[i].length; j++)
+            putchar(tokens[i].literal[j]);
+        printf("\"\t%ld\n", tokens[i].line);
     }
 
     printf("token_count = %ld\n", token_count);
