@@ -38,7 +38,7 @@ Lexer::Lexer()
   tokenTpls.push_back(make_pair(CRLF, token_regex("\r\n")));
   tokenTpls.push_back(make_pair(STRING_LITERAL, token_regex("\"(\\\\.|[^\"])*\"")));
   tokenTpls.push_back(make_pair(STRING_LITERAL, token_regex("!=")));
-  
+
 }
 
 int Lexer::count_crlf(string s)
@@ -93,8 +93,6 @@ vector<Token> Lexer::scan(string s)
     }
 
   }
-  
+
   return result;
 }
-
-

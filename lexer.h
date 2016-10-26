@@ -46,12 +46,12 @@ enum TokenType {
 class Token {
 public:
  Token(enum TokenType type, int linum, std::pair<int, int> span):
-  type(type), linum(linum), begin(begin), end(end) {};
+  type(type), linum(linum), begin(span.first), end(span.second) {};
 private:
   enum TokenType type;
+  int linum;
   int begin;
   int end;
-  int linum;
   int code;
 };
 
