@@ -26,7 +26,7 @@ Lexer::Lexer()
   tokenTpls.push_back(make_pair(DIV, token_regex("/")));
   tokenTpls.push_back(make_pair(DEC, token_regex("--")));
   tokenTpls.push_back(make_pair(INC, token_regex("\\+\\+")));
-  tokenTpls.push_back(make_pair(ASSIGNMENT, token_regex("=|\\+=|-=|\\*=|/=")));
+  tokenTpls.push_back(make_pair(ASSIGNMENT, token_regex("=")));
   tokenTpls.push_back(make_pair(EQ, token_regex("==")));
   tokenTpls.push_back(make_pair(NE, token_regex("!=")));
   tokenTpls.push_back(make_pair(GE, token_regex(">=")));
