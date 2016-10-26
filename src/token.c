@@ -52,7 +52,7 @@ void token_regex_init()
 struct token token_scan(char *code)
 {
     static int line_num = 1;
-    struct token token = { CRLF, "", 0, 0 };
+    struct token token = { 0, NULL, 0, 0 };
 
     for (size_t i = 0; i < 32; i++) {
         regmatch_t matched;
