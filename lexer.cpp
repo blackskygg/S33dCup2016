@@ -21,6 +21,7 @@ Lexer::Lexer()
   tokenTpls.push_back(make_pair(INT_TYPE, token_regex("int")));
   tokenTpls.push_back(make_pair(FOR, token_regex("for")));
   tokenTpls.push_back(make_pair(IF, token_regex("if")));
+  tokenTpls.push_back(make_pair(ELSE, token_regex("else")));
   tokenTpls.push_back(make_pair(DO, token_regex("do")));
   tokenTpls.push_back(make_pair(WHILE, token_regex("while")));
   tokenTpls.push_back(make_pair(BREAK, token_regex("break")));

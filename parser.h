@@ -70,8 +70,11 @@ class DeclStat: Statement {
 
 class Parser {
  public:
+  Parser();
   int parse(std::vector <Token>& tokens, std::vector<Statement>& stats);
  private:
+  int encode_tokens(std::vector <Token>& tokens, std::string &s);
+  char code_map[256];
 };
 
 

@@ -11,38 +11,45 @@
 
 enum TokenType {
   BLANK = 0,
-  INT_TYPE = 1,
-  FOR = 2,
-  IF = 3,
-  DO = 4,
-  WHILE = 5,
-  BREAK = 6,
-  PRINTF = 7,
-  IDENTIFIER = 8,
-  NUMBER = 9,
-  RP = 10,
-  LP = 11,
-  LB = 12,
-  RB = 13,
-  ADD = 14,
-  SUB = 15,
-  MUL = 16,
-  DIV = 17,
-  DEC = 18,
-  INC = 19,
-  ASSIGNMENT = 20,
-  NE = 21,
-  GE = 22,
-  LE = 23,
-  GT = 24,
-  LT = 25,
-  EQ = 26,
-  COLON = 27,
-  COMMA = 28,
-  SEMICOLON = 29,
-  COMMENT = 30,
-  CRLF = 31,
-  STRING_LITERAL = 32,
+  
+  INT_TYPE = 10,
+  FOR = 12,
+  IF = 13,
+  ELSE = 14,
+  WHILE = 15,
+  BREAK = 16,
+  PRINTF = 17,
+  DO = 18,
+
+  IDENTIFIER = 30,
+  NUMBER = 31,
+  RP = 32,
+  LP = 33,
+  LB = 34,
+  RB = 35,
+
+  MUL = 41,
+  DIV = 42,
+  DEC = 43,
+  INC = 44,
+  ADD = 45,
+  SUB = 46,
+  ASSIGNMENT = 47,
+  
+  LE = 61,
+  GT = 62,
+  LT = 63,
+  EQ = 64,
+  NE = 65,
+  GE = 66,
+
+  COMMA = 81,
+  SEMICOLON = 82,
+  COLON = 83,
+
+  COMMENT = 91,
+  CRLF = 92,
+  STRING_LITERAL = 93,
 };
 
 class Token {
@@ -50,7 +57,7 @@ public:
  Token(enum TokenType type, int linum, std::string code, std::pair<int, int> span):
   type(type), linum(linum), code(code), begin(span.first), end(span.second) {};
   void print();
-private:
+
   enum TokenType type;
   int linum;
   size_t begin;
