@@ -45,7 +45,7 @@ struct token {
     size_t line_num;
 };
 
-void token_re_init();
+void token_regex_init();
 
 struct token token_scan(char *code);
 

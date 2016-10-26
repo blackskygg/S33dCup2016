@@ -19,7 +19,7 @@ char *read_code(const char *fname)
 
 int main(int argc, char const *argv[])
 {
-    token_re_init();
+    token_regex_init();
 
     char *code = read_code("input.txt");
 
