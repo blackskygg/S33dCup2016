@@ -4,6 +4,9 @@
 #include <regex.h>
 
 enum token_type {
+    SP,         // ' ' | '\t'
+    CRLF,       // \r\n
+    COMMENT,    // /* asdf */ | // asdf
     INT_CONST,  // 123
     STRING,     // "hello"
     INT,        // int
@@ -13,7 +16,6 @@ enum token_type {
     DO,         // do
     FOR,        // for
     BREAK,      // break
-    ID,         // variable_a
     COMMA,      // ,
     SEMI_COLON, // ;
     LBRACE,     // {
@@ -22,22 +24,29 @@ enum token_type {
     RPAREN,     // )
     EQ,         // ==
     NE,         // !=
-    LT,         // <
-    GT,         // >
     LE,         // <=
     GE,         // >=
-    ASSIGN,     // = | += | -= | *= | /=
+    LT,         // <
+    GT,         // >
+    ASSIGN,     // =
     INC,        // ++
     DEC,        // --
     ADD,        // +
     SUB,        // -
     MUL,        // *
     DIV,        // /
+    ID,         // variable_a
 };
 
 struct token {
     enum token_type type;
-    char *content;
+    char *token;
+    size_t token_len;
+    size_t line_num;
 };
+
+void token_re_init();
+
+struct token token_scan(char *code);
 
 #endif
