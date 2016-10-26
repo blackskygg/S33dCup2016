@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "token.h"
 
+struct token tokens[65536];
+
 char *read_code(const char *fname)
 {
     FILE *fcode = fopen(fname, "rb");
@@ -26,15 +28,16 @@ int main(int argc, char const *argv[])
     char *iter = code;
     size_t token_count = 0;
     while (*iter && *iter != EOF) {
-        struct token t = token_scan(iter);
-
-        printf("token: %d\t\"", t.type);
-        for (size_t i = 0; i < t.token_len; i++)
-            putchar(t.token[i]);
-        printf("\"\t%ld\t%ld\n", t.token_len, t.line_num);
-
-        iter += t.token_len;
+        tokens[token_count] = token_scan(iter);
+        iter += tokens[token_count].token_len;
         token_count++;
+    }
+
+    for (size_t i = 0; i < token_count; i++) {
+        printf("token: %d\t\"", tokens[i].type);
+        for (size_t j = 0; j < tokens[i].token_len; j++)
+            putchar(tokens[i].token[j]);
+        printf("\"\t%ld\t%ld\n", tokens[i].token_len, tokens[i].line_num);
     }
 
     printf("token_count = %ld\n", token_count);
