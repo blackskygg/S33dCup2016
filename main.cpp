@@ -1,15 +1,15 @@
 #include <iostream>
 #include <cstdio>
-#include <cstdlib>
 #include "lexer.h"
 #include "parser.h"
 
+using namespace std;
 
 int main(int argc, char *argv[])
 {
   Lexer lexer;
   Parser parser;
-  char *buf = (char *)malloc(4 * 1024 * 1024);
+  char* buf = new char [4 * 1024 * 1024];
   size_t pos = 0, len;
   FILE *fp;
 
@@ -25,8 +25,14 @@ int main(int argc, char *argv[])
     pos += len;
   }
   buf[pos] = '\0';
-  
-  lexer.scan(buf);
-  
+
+  vector<Token> tokens;
+  lexer.scan(buf, tokens);
+  for(auto token: tokens)
+    token.print();
+
+  vector<Statement> stats;
+  parser.parse(tokens, stats);
+
   return 0;
 }

@@ -1,5 +1,5 @@
 CXX=c++
-CFLAGS= -std=c++14
+CFLAGS= -std=c++14 -g
 all: SeedCup
 
 clean:

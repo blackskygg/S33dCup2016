@@ -16,50 +16,52 @@ enum TokenType {
   IF = 3,
   DO = 4,
   WHILE = 5,
-  PRINTF = 6,
-  IDENTIFIER = 7,
-  NUMBER = 8,
-  RP = 9,
-  LP = 10,
-  LB = 11,
-  RB = 12,
-  ADD = 13,
-  SUB = 14,
-  MUL = 15,
-  DIV = 16,
-  DEC = 17,
-  INC = 18,
-  ASSIGNMENT = 19,
-  EQ = 20,
+  BREAK = 6,
+  PRINTF = 7,
+  IDENTIFIER = 8,
+  NUMBER = 9,
+  RP = 10,
+  LP = 11,
+  LB = 12,
+  RB = 13,
+  ADD = 14,
+  SUB = 15,
+  MUL = 16,
+  DIV = 17,
+  DEC = 18,
+  INC = 19,
+  ASSIGNMENT = 20,
   NE = 21,
   GE = 22,
   LE = 23,
   GT = 24,
   LT = 25,
-  SEMICOLON = 26,
+  EQ = 26,
   COLON = 27,
   COMMA = 28,
-  COMMENT = 29,
-  CRLF = 30,
-  STRING_LITERAL = 31,
+  SEMICOLON = 29,
+  COMMENT = 30,
+  CRLF = 31,
+  STRING_LITERAL = 32,
 };
 
 class Token {
 public:
- Token(enum TokenType type, int linum, std::pair<int, int> span):
-  type(type), linum(linum), begin(span.first), end(span.second) {};
+ Token(enum TokenType type, int linum, std::string code, std::pair<int, int> span):
+  type(type), linum(linum), code(code), begin(span.first), end(span.second) {};
+  void print();
 private:
   enum TokenType type;
   int linum;
-  int begin;
-  int end;
-  int code;
+  size_t begin;
+  size_t end;
+  std::string code;
 };
 
 class Lexer {
 public:
   Lexer();
-  std::vector<Token> scan(std::string s);
+  int scan(std::string s, std::vector<Token>& result);
 private:
   std::vector< std::pair<TokenType, std::regex> > tokenTpls;
 

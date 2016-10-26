@@ -1,4 +1,5 @@
 #include "parser.h"
+#include <iostream>
 
 using namespace std;
 
@@ -33,6 +34,7 @@ int CompoundStatement::execute()
 }
 
 
-vector<Statement> Parser::parse()
+int Parser::parse(vector <Token>& tokens, vector<Statement>& stats)
 {
+  return 0;
 }

@@ -5,6 +5,16 @@
 
 using namespace std;
 
+void Token::print()
+{
+
+  cout<<"{type: "<< type
+      <<", pos: "<<begin<<", "<< end
+      <<", code:  \""<<code
+      <<"\", linum: "<< linum
+      <<"}"<<endl;
+}
+
 Lexer::Lexer()
 {
   tokenTpls.push_back(make_pair(BLANK, token_regex("[ \t]+")));
@@ -13,6 +23,7 @@ Lexer::Lexer()
   tokenTpls.push_back(make_pair(IF, token_regex("if")));
   tokenTpls.push_back(make_pair(DO, token_regex("do")));
   tokenTpls.push_back(make_pair(WHILE, token_regex("while")));
+  tokenTpls.push_back(make_pair(BREAK, token_regex("break")));
   tokenTpls.push_back(make_pair(PRINTF, token_regex("printf")));
   tokenTpls.push_back(make_pair(IDENTIFIER, token_regex("[a-zA-Z_]\\w*")));
   tokenTpls.push_back(make_pair(NUMBER, token_regex("\\d+")));
@@ -44,23 +55,22 @@ Lexer::Lexer()
 
 int Lexer::count_crlf(string s)
 {
-  size_t pos = 0, len;
+  size_t pos = 0;
   int result = 0;
-  while (string::npos != (len = s.find("\r\n", pos))) {
+  while (string::npos != (pos = s.find("\r\n", pos))) {
     result++;
-    pos+=len;
+    pos+=2;
   }
 
   return result;
 }
 
-vector<Token> Lexer::scan(string s)
+int Lexer::scan(string s, vector<Token>& result)
 {
   enum TokenType type;
   smatch m;
   ssub_match best_match;
   int max_len = 0, linum = 1;
-  vector<Token> result;
   auto str_begin = cbegin(s), str_end = cend(s);
 
   while (str_begin != str_end) {
@@ -76,24 +86,25 @@ vector<Token> Lexer::scan(string s)
       }
     }
 
-    //output the match result
-    if (max_len) {
-      str_begin += max_len;
-      cout<<"{type: "<< type <<", length: "<< max_len
-	  <<", code:  \""<<best_match.str()
-	  <<"\", linum: "<< linum<<"}"<<endl;
-    } else {
+    if (!max_len)
       break;
-    }
-
+    else
+      str_begin += max_len;
+    
     //add the linum accordingly
-    if (CRLF == type) {
+    if (CRLF == type)
       ++linum;
-    } else if (COMMENT == type) {
+    else if (COMMENT == type)
       linum += count_crlf(best_match.str());
-    }
 
+
+    if(type != CRLF && type != COMMENT && type != BLANK) {
+      size_t begin_pos = str_begin - cbegin(s);
+      result.push_back(Token(type, linum, best_match.str(),
+			     make_pair(begin_pos, begin_pos + best_match.str().length())));
+
+    }
   }
 
-  return result;
+  return 0;
 }

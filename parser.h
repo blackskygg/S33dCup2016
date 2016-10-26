@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include "lexer.h"
 
 class Identifier {
  public:
@@ -69,7 +70,7 @@ class DeclStat: Statement {
 
 class Parser {
  public:
-  std::vector< Statement > parse();
+  int parse(std::vector <Token>& tokens, std::vector<Statement>& stats);
  private:
 };
 
