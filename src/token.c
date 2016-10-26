@@ -43,15 +43,15 @@ void token_regex_init()
 {
     for (size_t i = 0; i < 32; i++) {
         int status = regcomp(token_re + i, token_patterns[i], REG_EXTENDED);
-        if (status) {
+        if (status)
             printf("%ld failed \"%s\"\n", i, token_patterns[i]);
-        }
     }
     return;
 }
 
 struct token token_scan(char *code)
 {
+    static int line_num = 1;
     struct token token = { CRLF, "", 0, 0 };
 
     for (size_t i = 0; i < 32; i++) {
@@ -61,8 +61,10 @@ struct token token_scan(char *code)
             token.type = (enum token_type)i;
             token.token = code;
             token.token_len = (size_t)matched.rm_eo;
-            // TODO: deal with line num
-            token.line_num = 0;
+            token.line_num = line_num;
+            for (size_t i = 0; i < token.token_len; i++)
+                if (token.token[i] == '\r')
+                    line_num++;
             break;
         }
     }
