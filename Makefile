@@ -3,10 +3,10 @@ CFLAGS= -std=c++14
 all: SeedCup
 
 clean:
-	rm *.o SeedCup
+	rm *.o SeedCup2016.exe
 
 SeedCup : main.cpp parser.o lexer.o
-	$(CXX) $(CFLAGS) parser.o lexer.o main.cpp -o SeedCup
+	$(CXX) $(CFLAGS) parser.o lexer.o main.cpp -o SeedCup2016.exe
 
 parser.o :  parser.cpp parser.h
 	$(CXX) $(CFLAGS) -c parser.cpp -o parser.o
