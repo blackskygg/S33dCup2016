@@ -1,5 +1,4 @@
 int a, b = 1;
-
 a = 1;
 
 printf("output: %d\n", a++);
