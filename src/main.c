@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "token.h"
+#include "encode.h"
 
 struct token tokens[65536];
 
@@ -23,8 +24,11 @@ int main(int argc, char const *argv[])
 {
     token_regex_init();
 
+    // MALLOC code
     char *code = read_code("input.txt");
 
+    // fill tokens (not SP, CRLF or COMMENT) into tokens[]
+    // store tokens[] length into token_count
     char *iter = code;
     size_t token_count = 0;
     while (*iter && *iter != EOF) {
@@ -37,15 +41,25 @@ int main(int argc, char const *argv[])
         token_count++;
     }
 
+    // DEBUG display
     for (size_t i = 0; i < token_count; i++) {
         printf("token: %d\t\"", tokens[i].type);
         for (size_t j = 0; j < tokens[i].length; j++)
             putchar(tokens[i].literal[j]);
         printf("\"\t%ld\n", tokens[i].line);
     }
-
     printf("token_count = %ld\n", token_count);
 
+    // MALLOC type_string
+    char *type_string = token_type_string(tokens, token_count);
+
+    // DEBUG display
+    printf("%s\n", type_string);
+
+    // FREE type_string
+    free(type_string);
+
+    // FREE code
     free(code);
 
     return 0;
