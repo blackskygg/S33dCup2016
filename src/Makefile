@@ -1,4 +1,4 @@
-CC=cc
+CC=clang
 CFLAGS=-Wall
 
 all: main token syntax
