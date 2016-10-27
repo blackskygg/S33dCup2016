@@ -5,18 +5,15 @@ translation_unit	: decl
 			| translation_unit decl
 			;
 decl			: 'int' init_declarator_list ';'
-			;
+			; 声明语句
 decl_list		: decl
 			| decl_list decl
 			;
 init_declarator_list	: init_declarator
 			| init_declarator_list ',' init_declarator
-			;
+			; 声明列表
 init_declarator		: id
 			| id '=' assignment_exp
-			;
-id_list			: id
-			| id_list ',' id
 			;
 stat			: exp_stat
 			| compound_stat
@@ -33,7 +30,7 @@ compound_stat		: '{' decl_list stat_list '}'
 			| '{'		stat_list '}'
 			| '{' decl_list		'}'
 			| '{'			'}'
-			;
+			; 复合语句， 入口
 stat_list		: stat
 			| stat_list stat
 			;
@@ -55,9 +52,7 @@ exp			: assignment_exp
 			| exp ',' assignment_exp
 			;
 assignment_exp		: equality_exp
-			| unary_exp assignment_operator assignment_exp
-			;
-assignment_operator	: '=' | '*=' | '/=' | '+=' | '-='
+			| id '=' assignment_exp
 			;
 equality_exp		: relational_exp
 			| equality_exp '==' relational_exp
