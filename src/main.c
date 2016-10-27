@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "token.h"
+#include "syntax.h"
 
 struct token tokens[65536];
 
@@ -48,6 +50,14 @@ int main(int argc, char const *argv[])
         printf("\"\t%ld\n", tokens[i].line);
     }
     printf("token_count = %ld\n", token_count);
+
+    // MALLOC root
+    struct syntax_node *root = generate_ast();
+
+    print_ast(root, 0);
+
+    // FREE root
+    destory_ast(root);
 
     // FREE code
     free(code);

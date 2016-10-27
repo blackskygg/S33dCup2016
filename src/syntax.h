@@ -13,11 +13,13 @@ enum syntax_type {
     EXP_STAT,
     COMPOUND_STAT,
     SELECTION_STAT,
-    ITERATION_STAT,
+    WHILE_STAT,
+    DO_WHILE_STAT,
+    FOR_STAT,
     JUMP_STAT,
     PRINT_STAT,
     ARGUMENT_LIST,
-    EXP,
+    EXPRESSION,
     ASSIGNMENT_EXP,
     EQUALITY_EXP,
     RELATIONAL_EXP,
@@ -32,12 +34,31 @@ enum syntax_type {
 };
 
 struct syntax_node {
-    enum syntax_type type;
-    union {
-        int		int_const;
-        char *	id;
-        char *	string;
-    } info;
+    enum syntax_type	type;
+    size_t				token_idx;
+    struct syntax_node *children;
+    struct syntax_node *sibling;
 };
+
+struct syntax_node *generate_ast();
+void destory_ast(struct syntax_node *root);
+void print_ast(struct syntax_node *root, size_t level);
+
+struct syntax_node *stat_list(size_t *idx);
+struct syntax_node *stat(size_t *idx);
+struct syntax_node *decl_stat(size_t *idx);
+struct syntax_node *init_decl_list(size_t *idx);
+struct syntax_node *init_decl(size_t *idx);
+struct syntax_node *exp_stat(size_t *idx);
+struct syntax_node *compound_stat(size_t *idx);
+struct syntax_node *selection_stat(size_t *idx);
+struct syntax_node *while_stat(size_t *idx);
+struct syntax_node *do_while_stat(size_t *idx);
+struct syntax_node *for_stat(size_t *idx);
+struct syntax_node *jump_stat(size_t *idx);
+struct syntax_node *print_stat(size_t *idx);
+struct syntax_node *argument_list(size_t *idx);
+struct syntax_node *expression(size_t *idx);
+
 
 #endif
