@@ -67,7 +67,7 @@ void print_type_string(struct token tokens[], size_t token_count)
         switch (tokens[i].type) {
         case INT_CONST: c = 'N'; break;
         case STRING:    c = 'S'; break;
-        case INT_DECL:  c = 'd'; break;
+        case DECL:      c = 'd'; break;
         case IF:        c = 'i'; break;
         case ELSE:      c = 'e'; break;
         case WHILE:     c = 'w'; break;
