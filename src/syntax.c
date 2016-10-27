@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define gurantee(t) do {if (tokens[*idx].type != t) return NULL;} while(0)
-#define consume(t) do {if (tokens[*idx].type == t) (*idx)++;} while(0)
+#define gurantee(t) do { if (tokens[*idx].type != t) return NULL; } while (0)
+#define consume(t) do { if (tokens[*idx].type == t) (*idx)++; } while (0)
 #define malloc_node() ((struct syntax_node *)malloc(sizeof(struct syntax_node)))
 
 extern struct token tokens[65536];
