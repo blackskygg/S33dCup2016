@@ -1,17 +1,14 @@
 CC=cc
 CFLAGS=-Wall
 
-all: main token encode
-	$(CC) $(CFLAGS) -o SeedCup2016.exe main.o token.o encode.o
+all: main token
+	$(CC) $(CFLAGS) -o SeedCup2016.exe main.o token.o
 
 main: main.c
 	$(CC) $(CFLAGS) -c main.c
 
 token: token.c
 	$(CC) $(CFLAGS) -c token.c
-
-encode: encode.c
-	$(CC) $(CFLAGS) -c encode.c
 
 clean:
 	rm SeedCup2016.exe *.o
