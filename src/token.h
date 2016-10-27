@@ -9,7 +9,7 @@ enum token_type {
     COMMENT,    // /* asdf */ | // asdf
     INT_CONST,  // 123
     STRING,     // "hello"
-    DECL,       // int
+    INT_DECL,   // int
     IF,         // if
     ELSE,       // else
     WHILE,      // while
@@ -41,9 +41,9 @@ enum token_type {
 
 struct token {
     enum token_type type;
-    char *literal;
-    size_t length;
-    size_t line;
+    char *			literal;
+    size_t			length;
+    size_t			line;
 };
 
 void token_regex_init();
