@@ -1,7 +1,7 @@
 CC=cc
 CFLAGS=-Wall
 
-all: main token encode cp_test
+all: main token encode
 	$(CC) $(CFLAGS) -o SeedCup2016.exe main.o token.o encode.o
 
 main: main.c
