@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     token.print();
 
   Parser parser(tokens);
-  vector<Statement> stats;
+  vector<shared_ptr<Statement> > stats;
   parser.parse(stats);
 
   delete buf;

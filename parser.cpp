@@ -200,14 +200,14 @@ void Parser::parse_decl_stat(string::const_iterator str_begin,
 void Parser::parse_stats(string::const_iterator str_begin,
 			 string::const_iterator str_end,
 			 size_t origin,
-			 vector<Statement>& stats,
-			 vector<Token> &tokens, Scope *scope)
+			 vector< shared_ptr<Statement> >& stats,
+			 vector<Token> &tokens, shared_ptr<Scope> scope)
 {
   size_t max_len, begin_pos, end_pos;
   smatch m, best_match;
   Statement::StatType type;
   auto str_origin = str_begin;
-  DeclStat decl_stat(scope);
+  shared_ptr<DeclStat> decl_stat;
 
   for ( ; str_begin != str_end; str_begin += max_len) {
     max_len = 0;
@@ -234,10 +234,9 @@ void Parser::parse_stats(string::const_iterator str_begin,
       break;
 
     case Statement::DECL_STAT:
-      decl_stat.begin = begin_pos;
-      decl_stat.end = end_pos;
+      decl_stat = make_shared<DeclStat>(begin_pos, end_pos, scope);
       parse_decl_stat(best_match[0].first, best_match[0].second,
-		      begin_pos, decl_stat);
+		      begin_pos, *decl_stat);
       stats.push_back(decl_stat);
       break;
 
@@ -254,13 +253,13 @@ void Parser::encode_tokens(std::vector <Token>& tokens, string &s)
 }
 
 
-int Parser::parse(vector<Statement>& stats)
+int Parser::parse(vector< shared_ptr<Statement> >& stats)
 {
   string s;
-  Scope global_scp;
+  shared_ptr<Scope> global_scp;
 
   encode_tokens(tokens, s);
-  parse_stats(s.cbegin(), s.cend(), 0, stats, tokens, &global_scp);
+  parse_stats(s.cbegin(), s.cend(), 0, stats, tokens, global_scp);
 
   return 0;
 }

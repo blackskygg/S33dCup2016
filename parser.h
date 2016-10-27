@@ -74,14 +74,15 @@ class Statement {
   }StatType;
 
   Statement() = default;
- Statement(Scope *scope): scope(scope) {};
+ Statement(size_t begin, size_t end, std::shared_ptr<Scope> scope):
+  begin(begin), end(end), scope(scope) {};
   int execute() {};
 
   //begin and end are the positions of the begining and ending tokens
   size_t begin;
   size_t end;
 
-  Scope *scope;
+  std::shared_ptr<Scope> scope;
 };
 
 class CompoundStatement: public Statement {
@@ -98,7 +99,12 @@ class ExpressionStat : public Statement {
 typedef std::vector<AssignmentExpr> InitDeclaratorList;
 class DeclStat: public Statement {
  public:
- DeclStat(Scope *scope) {this->scope = scope;};
+  DeclStat(size_t begin, size_t end, std::shared_ptr<Scope> scope) {
+    this->begin = begin;
+    this->end = end;
+    this->scope = scope;
+  };
+  
   int execute();
   InitDeclaratorList decl_list;
 };
@@ -110,7 +116,7 @@ class DeclStat: public Statement {
 class Parser {
  public:
   Parser(std::vector <Token> &tokens);
-  int parse(std::vector<Statement>& stats);
+  int parse(std::vector<std::shared_ptr<Statement> >& stats);
   
  private:
   void parse_expr(std::string::const_iterator begin,
@@ -128,8 +134,9 @@ class Parser {
   void parse_stats(std::string::const_iterator begin,
 		   std::string::const_iterator end,
 		   size_t origin,
-		   std::vector<Statement>& stat,
-		   std::vector<Token> &tokens, Scope *scope);
+		   std::vector< std::shared_ptr<Statement> >& stats,
+		   std::vector<Token> &tokens,
+		   std::shared_ptr<Scope> scope);
   void encode_tokens(std::vector <Token>& tokens, std::string &s);
 
   std::vector< std::pair<Statement::StatType, std::regex> > stat_tpls;
