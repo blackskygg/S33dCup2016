@@ -13,8 +13,5 @@ token: token.c
 encode: encode.c
 	$(CC) $(CFLAGS) -c encode.c
 
-cp_test:
-	cp ../tests/input.txt .
-
 clean:
-	rm SeedCup2016.exe *.o input.txt
+	rm SeedCup2016.exe *.o
