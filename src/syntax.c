@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define gurantee(t) do { if (tokens[*idx].type != t) return NULL; } while (0)
+#define check(t) (tokens[*idx].type == t)
 #define consume(t) do { if (tokens[*idx].type == t) (*idx)++; } while (0)
 #define malloc_node() ((struct syntax_node *)malloc(sizeof(struct syntax_node)))
 
@@ -119,7 +119,8 @@ struct syntax_node *init_decl_list(size_t *idx)
 
 struct syntax_node *init_decl(size_t *idx)
 {
-    gurantee(ID);
+    if (!check(ID))
+        return NULL;
     struct syntax_node *node = malloc_node();
     node->type = INIT_DECL;
     node->token_idx = *idx;
