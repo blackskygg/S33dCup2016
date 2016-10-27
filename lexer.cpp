@@ -17,41 +17,42 @@ void Token::print()
 
 Lexer::Lexer()
 {
-  tokenTpls.push_back(make_pair(BLANK, token_regex("[ \t]+")));
-  tokenTpls.push_back(make_pair(INT_TYPE, token_regex("int")));
-  tokenTpls.push_back(make_pair(FOR, token_regex("for")));
-  tokenTpls.push_back(make_pair(IF, token_regex("if")));
-  tokenTpls.push_back(make_pair(ELSE, token_regex("else")));
-  tokenTpls.push_back(make_pair(DO, token_regex("do")));
-  tokenTpls.push_back(make_pair(WHILE, token_regex("while")));
-  tokenTpls.push_back(make_pair(BREAK, token_regex("break")));
-  tokenTpls.push_back(make_pair(PRINTF, token_regex("printf")));
-  tokenTpls.push_back(make_pair(IDENTIFIER, token_regex("[a-zA-Z_]\\w*")));
-  tokenTpls.push_back(make_pair(NUMBER, token_regex("\\d+")));
-  tokenTpls.push_back(make_pair(RP, token_regex("\\)")));
-  tokenTpls.push_back(make_pair(LP, token_regex("\\(")));
-  tokenTpls.push_back(make_pair(RB, token_regex("\\}")));
-  tokenTpls.push_back(make_pair(LB, token_regex("\\{")));
-  tokenTpls.push_back(make_pair(ADD, token_regex("\\+")));
-  tokenTpls.push_back(make_pair(SUB, token_regex("-")));
-  tokenTpls.push_back(make_pair(MUL, token_regex("\\*")));
-  tokenTpls.push_back(make_pair(DIV, token_regex("/")));
-  tokenTpls.push_back(make_pair(DEC, token_regex("--")));
-  tokenTpls.push_back(make_pair(INC, token_regex("\\+\\+")));
-  tokenTpls.push_back(make_pair(ASSIGNMENT, token_regex("=")));
-  tokenTpls.push_back(make_pair(EQ, token_regex("==")));
-  tokenTpls.push_back(make_pair(NE, token_regex("!=")));
-  tokenTpls.push_back(make_pair(GE, token_regex(">=")));
-  tokenTpls.push_back(make_pair(LE, token_regex("<=")));
-  tokenTpls.push_back(make_pair(GT, token_regex(">")));
-  tokenTpls.push_back(make_pair(LT, token_regex("<")));
-  tokenTpls.push_back(make_pair(SEMICOLON, token_regex(";")));
-  tokenTpls.push_back(make_pair(COLON, token_regex(":")));
-  tokenTpls.push_back(make_pair(COMMA, token_regex(",")));
-  tokenTpls.push_back(make_pair(COMMENT, token_regex("(/\\*(.|\r\n)*?\\*/)|(//[^\r\n]*)")));
-  tokenTpls.push_back(make_pair(CRLF, token_regex("\r\n")));
-  tokenTpls.push_back(make_pair(STRING_LITERAL, token_regex("\"(\\\\.|[^\"])*\"")));
-
+  tokenTpls.push_back(make_pair(Token::BLANK, token_regex("[ \t]+")));
+  tokenTpls.push_back(make_pair(Token::INT_TYPE, token_regex("int")));
+  tokenTpls.push_back(make_pair(Token::FOR, token_regex("for")));
+  tokenTpls.push_back(make_pair(Token::IF, token_regex("if")));
+  tokenTpls.push_back(make_pair(Token::ELSE, token_regex("else")));
+  tokenTpls.push_back(make_pair(Token::DO, token_regex("do")));
+  tokenTpls.push_back(make_pair(Token::WHILE, token_regex("while")));
+  tokenTpls.push_back(make_pair(Token::BREAK, token_regex("break")));
+  tokenTpls.push_back(make_pair(Token::PRINTF, token_regex("printf")));
+  tokenTpls.push_back(make_pair(Token::IDENTIFIER, token_regex("[a-zA-Token::Z_]\\w*")));
+  tokenTpls.push_back(make_pair(Token::NUMBER, token_regex("\\d+")));
+  tokenTpls.push_back(make_pair(Token::RP, token_regex("\\)")));
+  tokenTpls.push_back(make_pair(Token::LP, token_regex("\\(")));
+  tokenTpls.push_back(make_pair(Token::RB, token_regex("\\}")));
+  tokenTpls.push_back(make_pair(Token::LB, token_regex("\\{")));
+  tokenTpls.push_back(make_pair(Token::ADD, token_regex("\\+")));
+  tokenTpls.push_back(make_pair(Token::SUB, token_regex("-")));
+  tokenTpls.push_back(make_pair(Token::MUL, token_regex("\\*")));
+  tokenTpls.push_back(make_pair(Token::DIV, token_regex("/")));
+  tokenTpls.push_back(make_pair(Token::DEC, token_regex("--")));
+  tokenTpls.push_back(make_pair(Token::INC, token_regex("\\+\\+")));
+  tokenTpls.push_back(make_pair(Token::ASSIGNMENT, token_regex("=")));
+  tokenTpls.push_back(make_pair(Token::EQ, token_regex("==")));
+  tokenTpls.push_back(make_pair(Token::NE, token_regex("!=")));
+  tokenTpls.push_back(make_pair(Token::GE, token_regex(">=")));
+  tokenTpls.push_back(make_pair(Token::LE, token_regex("<=")));
+  tokenTpls.push_back(make_pair(Token::GT, token_regex(">")));
+  tokenTpls.push_back(make_pair(Token::LT, token_regex("<")));
+  tokenTpls.push_back(make_pair(Token::SEMICOLON, token_regex(";")));
+  tokenTpls.push_back(make_pair(Token::COLON, token_regex(":")));
+  tokenTpls.push_back(make_pair(Token::COMMA, token_regex(",")));
+  tokenTpls.push_back(make_pair(Token::COMMENT,				\
+				token_regex("(/\\*(.|\r\n)*?\\*/)|(//[^\r\n]*)")));
+  tokenTpls.push_back(make_pair(Token::CRLF, token_regex("\r\n")));
+  tokenTpls.push_back(make_pair(Token::STRING_LITERAL,			\
+				token_regex("\"(\\\\.|[^\"])*\"")));
 }
 
 int Lexer::count_crlf(string s)
@@ -68,7 +69,7 @@ int Lexer::count_crlf(string s)
 
 int Lexer::scan(string s, vector<Token>& result)
 {
-  enum TokenType type;
+  Token::TokenType type;
   smatch m;
   ssub_match best_match;
   int max_len = 0, linum = 1;
@@ -93,13 +94,13 @@ int Lexer::scan(string s, vector<Token>& result)
       str_begin += max_len;
     
     //add the linum accordingly
-    if (CRLF == type)
+    if (Token::CRLF == type)
       ++linum;
-    else if (COMMENT == type)
+    else if (Token::COMMENT == type)
       linum += count_crlf(best_match.str());
 
 
-    if(type != CRLF && type != COMMENT && type != BLANK) {
+    if(type != Token::CRLF && type != Token::COMMENT && type != Token::BLANK) {
       size_t begin_pos = str_begin - cbegin(s);
       result.push_back(Token(type, linum, best_match.str(),
 			     make_pair(begin_pos, begin_pos + best_match.str().length())));

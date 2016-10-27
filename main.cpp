@@ -5,19 +5,11 @@
 
 using namespace std;
 
-int main(int argc, char *argv[])
+int read_file(char *fn, char *buf)
 {
-  Lexer lexer;
-  Parser parser;
-  char* buf = new char [4 * 1024 * 1024];
   size_t pos = 0, len;
   FILE *fp;
-
-
-  if (argc < 2)
-    return 0;
-
-  if (! (fp = fopen(argv[1], "rb")) )
+  if (! (fp = fopen(fn, "rb")) )
     return -1;
   
   while (!feof(fp)) {
@@ -26,13 +18,31 @@ int main(int argc, char *argv[])
   }
   buf[pos] = '\0';
 
+  fclose(fp);
+  return 0;
+}
+
+int main(int argc, char *argv[])
+{
+  if (argc < 2)
+    return 0;
+  
+  char* buf = new char [4 * 1024 * 1024];
+
+  if(0 != read_file(argv[1], buf))
+    return -1;
+
+  Lexer lexer;
   vector<Token> tokens;
   lexer.scan(buf, tokens);
   for(auto token: tokens)
     token.print();
 
+  Parser parser(tokens);
   vector<Statement> stats;
-  parser.parse(tokens, stats);
+  parser.parse(stats);
 
+  delete buf;
+  
   return 0;
 }

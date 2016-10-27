@@ -4,6 +4,7 @@
 #include <vector>
 #include <utility>
 #include <string>
+#include <regex>
 #include <unordered_map>
 #include <unordered_set>
 #include "lexer.h"
@@ -21,60 +22,120 @@ class Scope {
 
 class Expression{
  public:
-  Scope *scope;
-  int eval() {};
+  typedef enum{
+    COMMA,
+    ASSIGNMENT,
+    EQUALITY,
+    RELATIONAL,
+    ADDITIVE,
+    MULT,
+    UNARY,
+    POSTFIX,
+    PRIMARY,
+  } ExprType;
+
+  int eval(Scope &scope) {};
 };
 
-class AssignmentExpr: Expression {
+class AssignmentExpr: public Expression {
  public:
+  AssignmentExpr() = default;
   AssignmentExpr (std::string id, Expression expr): id(id), expr(expr) {};
-  int eval();
-  
+  int eval(Scope &scope);
+
   std::string id;
   Expression expr;
 };
 
-class PrimaryExpr: Expression {
+class PrimaryExprConst: public Expression {
  public:
-  PrimaryExpr(int val): val(val) {};
-  int eval();
+  PrimaryExprConst(int val): val(val) {};
+  int eval(Scope &scope);
   
   int val;
 };
 
-class Statement {
+class PrimaryExprId: public Expression {
  public:
-  int execute() {};
+ PrimaryExprId(std::string id): id(id) {};
+  int eval(Scope &scope);
+  
+  std::string id;
 };
 
-class CompoundStatement: Statement {
+class Statement {
+ public:
+
+  typedef enum {
+    COMPOUND_STAT = 0,
+    DECL_STAT = 1,
+  }StatType;
+
+  Statement() = default;
+ Statement(Scope *scope): scope(scope) {};
+  int execute() {};
+
+  //begin and end are the positions of the begining and ending tokens
+  size_t begin;
+  size_t end;
+
+  Scope *scope;
+};
+
+class CompoundStatement: public Statement {
  public:
   int execute();
-
   std::vector< Statement > stat_list;
 };
 
-class ExpressionStat : Statement {
+class ExpressionStat : public Statement {
  public:
-  ExpressionStat(Expression expr): expr(expr) {};
+ ExpressionStat(Expression expr): expr(expr) {};
 
   Expression expr;
 };
 
 typedef std::vector<AssignmentExpr> InitDeclaratorList;
-class DeclStat: Statement {
+class DeclStat: public Statement {
  public:
+ DeclStat(Scope *scope) {this->scope = scope;};
   int execute();
-  InitDeclaratorList init_decl_list;
+  InitDeclaratorList decl_list;
 };
+
+
+#define stat_regex(s) regex(s)
+#define expr_regex(s) regex(s)
 
 class Parser {
  public:
-  Parser();
-  int parse(std::vector <Token>& tokens, std::vector<Statement>& stats);
+  Parser(std::vector <Token> &tokens);
+  int parse(std::vector<Statement>& stats);
+  
  private:
-  int encode_tokens(std::vector <Token>& tokens, std::string &s);
+  void parse_expr(std::string::const_iterator begin,
+			  std::string::const_iterator end,
+			  size_t origin,
+			  Expression& expr);
+  void parse_assign_expr(std::string::const_iterator begin,
+			 std::string::const_iterator end,
+			 size_t origin,
+			 AssignmentExpr& expr);
+  void parse_decl_stat(std::string::const_iterator begin,
+		       std::string::const_iterator end,
+		       size_t origin,
+		       DeclStat& stat);
+  void parse_stats(std::string::const_iterator begin,
+		   std::string::const_iterator end,
+		   size_t origin,
+		   std::vector<Statement>& stat,
+		   std::vector<Token> &tokens, Scope *scope);
+  void encode_tokens(std::vector <Token>& tokens, std::string &s);
+
+  std::vector< std::pair<Statement::StatType, std::regex> > stat_tpls;
+  std::vector< std::pair<Expression::ExprType, std::regex> > expr_tpls;
   char code_map[256];
+  std::vector <Token> &tokens;
 };
 
 
