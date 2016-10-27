@@ -20,7 +20,7 @@ int PrimaryExprId:: eval(Scope& scope)
 
 int AssignmentExpr::eval(Scope& scope)
 {
-  return scope.get_identifier(id).val = expr.eval(scope);
+  return scope.get_identifier(id).val = expr->eval(scope);
 }
 
 int DeclStat::execute()
@@ -31,7 +31,7 @@ int DeclStat::execute()
 int CompoundStatement::execute()
 {
   for (auto stat: stat_list)
-    stat.execute();
+    stat->execute();
    
   return 0;
 }
@@ -83,14 +83,14 @@ Parser::Parser(vector <Token> &tokens): tokens(tokens)
   expr_tpls.push_back(make_pair(Expression::ADDITIVE, expr_regex("(.+?)[\\+-](.+)")));
   expr_tpls.push_back(make_pair(Expression::MULT, expr_regex("(.+?)[\\*/](.+)")));
   expr_tpls.push_back(make_pair(Expression::UNARY, expr_regex("[\\+-](.+)")));
-  expr_tpls.push_back(make_pair(Expression::POSTFIX, expr_regex(".+")));
+  expr_tpls.push_back(make_pair(Expression::POSTFIX, expr_regex("(.+?)[\\^v]")));
   expr_tpls.push_back(make_pair(Expression::PRIMARY, expr_regex("[na]")));
 }
 
 void Parser::parse_expr(string::const_iterator str_begin,
 			string::const_iterator str_end,
 			size_t origin,
-			Expression& expr)
+			shared_ptr<Expression>& expr)
 {
   smatch m;
   Expression::ExprType type;
@@ -99,10 +99,12 @@ void Parser::parse_expr(string::const_iterator str_begin,
 
   for ( ; str_begin != str_end; str_begin += m[0].length()) {
     //search for best match
-    for (auto tpl: stat_tpls) {
+    for (auto tpl: expr_tpls) {
       if (regex_search(str_begin, str_end, m, tpl.second,
-		       regex_constants::match_continuous))
+		       regex_constants::match_continuous)) {
+	type = tpl.first;
 	break;
+      }
     }
 
     if (!m.size())
@@ -130,10 +132,15 @@ void Parser::parse_expr(string::const_iterator str_begin,
     case Expression::POSTFIX:
       break;
     case Expression::PRIMARY:
-      if (m[0].str() == "n") 
-	expr = PrimaryExprConst(atoi(tokens[begin_pos].code.c_str()));
-      else
-        expr = PrimaryExprId(tokens[begin_pos].code.c_str());
+      if (m[0].str() == "n") {
+	expr = dynamic_pointer_cast<Expression>				\
+	  (make_shared<PrimaryExprConst>				\
+	   (atoi(tokens[begin_pos].code.c_str())));
+      } else {
+	expr = dynamic_pointer_cast<Expression>				\
+	  (make_shared<PrimaryExprId>					\
+	   (tokens[begin_pos].code));
+      }
       break;
     default:
       break;
@@ -159,21 +166,35 @@ void Parser::parse_decl_stat(string::const_iterator str_begin,
 			     size_t origin,
 			     DeclStat& stat)
 {
+
   smatch m;
+  size_t len, begin_pos, end_pos;
+  auto str_origin = str_begin;
   AssignmentExpr assign_expr;
-  
-  regex_search(str_begin, str_end, m, regex("a|a=[^,;]+"));
-  for (size_t i = 0; i < m.size(); ++i) {
-    if (m.str().length() > 1) {
-      parse_assign_expr(m[i].first, m[i].second,
-			origin + m.position(i), assign_expr);
+
+  for ( ; str_begin != str_end; str_begin += len + m.position(0)) {
+    if(!regex_search(str_begin, str_end, m, regex("a=[^,;]+|a")))
+      break;
+    
+    len = m[0].str().length();  
+    begin_pos = m.position(0) + str_begin - str_origin + origin;
+    end_pos = begin_pos + len;
+
+    if (len > 1) {
+	parse_assign_expr(m[0].first, m[0].second,
+			  begin_pos, assign_expr);
     } else {
-      assign_expr.id = tokens[origin + m.position(i)].code;
-      assign_expr.expr = PrimaryExprConst(0);
+      assign_expr.id = tokens[begin_pos].code;
+      assign_expr.expr = dynamic_pointer_cast<Expression>	\
+	(make_shared<PrimaryExprConst>(0));
     }
     stat.decl_list.push_back(assign_expr);
-
   }
+
+  for(auto e: stat.decl_list) {
+    cout<<(dynamic_pointer_cast<PrimaryExprConst>(e.expr))->val<<endl;
+  }
+
 }
 
 void Parser::parse_stats(string::const_iterator str_begin,

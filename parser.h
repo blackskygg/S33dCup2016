@@ -5,6 +5,7 @@
 #include <utility>
 #include <string>
 #include <regex>
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
 #include "lexer.h"
@@ -34,24 +35,25 @@ class Expression{
     PRIMARY,
   } ExprType;
 
-  int eval(Scope &scope) {};
+  virtual int eval(Scope &scope) = 0;
 };
 
 class AssignmentExpr: public Expression {
  public:
   AssignmentExpr() = default;
-  AssignmentExpr (std::string id, Expression expr): id(id), expr(expr) {};
+  AssignmentExpr (std::string id, std::shared_ptr<Expression> expr): id(id), expr(expr) {};
   int eval(Scope &scope);
 
   std::string id;
-  Expression expr;
+  std::shared_ptr<Expression> expr;
 };
 
 class PrimaryExprConst: public Expression {
  public:
+  PrimaryExprConst() = default;
   PrimaryExprConst(int val): val(val) {};
+
   int eval(Scope &scope);
-  
   int val;
 };
 
@@ -85,14 +87,12 @@ class Statement {
 class CompoundStatement: public Statement {
  public:
   int execute();
-  std::vector< Statement > stat_list;
+  std::vector< std::shared_ptr<Statement> > stat_list;
 };
 
 class ExpressionStat : public Statement {
  public:
- ExpressionStat(Expression expr): expr(expr) {};
-
-  Expression expr;
+  std::shared_ptr<Expression> expr;
 };
 
 typedef std::vector<AssignmentExpr> InitDeclaratorList;
@@ -114,9 +114,9 @@ class Parser {
   
  private:
   void parse_expr(std::string::const_iterator begin,
-			  std::string::const_iterator end,
-			  size_t origin,
-			  Expression& expr);
+		  std::string::const_iterator end,
+		  size_t origin,
+		  std::shared_ptr<Expression>& expr);
   void parse_assign_expr(std::string::const_iterator begin,
 			 std::string::const_iterator end,
 			 size_t origin,
