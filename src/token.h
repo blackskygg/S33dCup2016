@@ -16,6 +16,7 @@ enum token_type {
     DO,         // do
     FOR,        // for
     BREAK,      // break
+    PRINTF,     // printf
     COMMA,      // ,
     SEMI_COLON, // ;
     LBRACE,     // {

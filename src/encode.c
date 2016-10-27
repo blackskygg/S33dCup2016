@@ -17,6 +17,7 @@ char *token_type_string(struct token tokens[], size_t token_count)
             case DO:        c = 'd'; break;
             case FOR:       c = 'f'; break;
             case BREAK:     c = 'b'; break;
+            case PRINTF:    c = 'p'; break;
             case COMMA:     c = ','; break;
             case SEMI_COLON:c = ';'; break;
             case LBRACE:    c = '{'; break;
