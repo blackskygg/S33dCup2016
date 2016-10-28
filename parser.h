@@ -41,25 +41,83 @@ class Expression{
     PRIMARY = 8,
   } ExprType;
 
-  virtual int eval(Scope &scope) = 0;
+  int eval(Scope &scope) {};
 };
 
 class AssignmentExpr: public Expression {
  public:
-  AssignmentExpr() = default;
-  AssignmentExpr (std::string id, std::shared_ptr<Expression> expr): id(id), expr(expr) {};
   int eval(Scope &scope);
 
   std::string id;
   std::shared_ptr<Expression> expr;
 };
 
+class CommaExpr: public Expression {
+ public:
+  int eval(Scope &scope);
+
+  std::shared_ptr<Expression> expr1;
+  std::shared_ptr<Expression> expr2;
+};
+
+class EqualityExpr: public Expression {
+ public:
+  int eval(Scope &scope);
+
+  std::string op;
+  std::shared_ptr<Expression> expr1;
+  std::shared_ptr<Expression> expr2;
+};
+
+class RelationalExpr: public Expression {
+ public:
+  int eval(Scope &scope);
+
+  std::string op;
+  std::shared_ptr<Expression> expr1;
+  std::shared_ptr<Expression> expr2;
+};
+
+class AdditiveExpr: public Expression {
+ public:
+  int eval(Scope &scope);
+
+  std::string op;
+  std::shared_ptr<Expression> expr1;
+  std::shared_ptr<Expression> expr2;
+};
+
+class MultExpr: public Expression {
+ public:
+  int eval(Scope &scope);
+
+  std::string op;
+  std::shared_ptr<Expression> expr1;
+  std::shared_ptr<Expression> expr2;
+};
+
+class UnaryExpr: public Expression {
+ public:
+  int eval(Scope &scope);
+
+  std::string op; 
+  std::shared_ptr<Expression> expr;
+};
+
+class PostfixExpr: public Expression {
+ public:
+  int eval(Scope &scope);
+  
+  std::string op; 
+  std::shared_ptr<Expression> expr;
+};
+
 class PrimaryExprConst: public Expression {
  public:
-  PrimaryExprConst() = default;
   PrimaryExprConst(int val): val(val) {};
 
   int eval(Scope &scope);
+
   int val;
 };
 
@@ -137,6 +195,12 @@ class WhileStat: public Statement {
   std::shared_ptr<Statement> stat;
 };
 
+class BreakStat: public Statement {
+ public:
+  BreakStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum) {};
+  int execute();
+};
+
 class DoStat: public Statement {
  public:
   DoStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum) {};
@@ -176,7 +240,7 @@ class Parser {
 		  std::string::const_iterator end,
 		  size_t origin,
 		  std::shared_ptr<Expression>& expr);
-  void parse_assign_expr(std::string::const_iterator begin,
+  void parse_init_decl(std::string::const_iterator begin,
 			 std::string::const_iterator end,
 			 size_t origin,
 			 AssignmentExpr& expr);
@@ -205,6 +269,10 @@ class Parser {
 						  std::string::const_iterator str_end,
 						  size_t origin,
 						  WhileStat& stat);
+  std::string::const_iterator parse_break_stat(std::string::const_iterator str_begin,
+						  std::string::const_iterator str_end,
+						  size_t origin,
+						  BreakStat& stat);
   std::string::const_iterator parse_do_stat(std::string::const_iterator str_begin,
 						  std::string::const_iterator str_end,
 						  size_t origin,

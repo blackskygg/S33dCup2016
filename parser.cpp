@@ -38,7 +38,6 @@ int CompoundStat::execute()
 
 Parser::Parser(vector <Token> &tokens): tokens(tokens)
 {
-  //  code_map[BLANK] = '';
   code_map[Token::INT_TYPE] = 'i';
   code_map[Token::FOR] = 'f';
   code_map[Token::IF] = '?';
@@ -69,35 +68,17 @@ Parser::Parser(vector <Token> &tokens): tokens(tokens)
   code_map[Token::COLON] = ':';
   code_map[Token::COMMA] = ',';
   code_map[Token::SEMICOLON] = ';';
-  //  code_map[Token::COMMENT] = '';
-  //  code_map[Token::CRLF] = '';
   code_map[Token::STRING_LITERAL] = 's';
 
-
-  stat_tpls.push_back(make_pair(Statement::DECL_STAT, stat_regex("i(.+?);")));
-  stat_tpls.push_back(make_pair(Statement::COMPOUND_STAT, stat_regex("\\{(.*?)\\};?")));
-  /*
-  stat_tpls.push_back(make_pair(Statement::SELECTION_STAT_DO,
-				stat_regex("\\?" "(?:\\(([^\\)]+)\\))"
-					   "([^@;\\]+)?"
-					   "(?:@([^;]+))?;")));
-  stat_tpls.push_back(make_pair(Statement::ITERATIONSTAT_STAT_WHILE,
-				stat_regex("w\\((.+?)\\)(.+?;)")));
-  stat_tpls.push_back(make_pair(Statement::ITERATION_STAT, stat_regex("i(.+?);")));
-  stat_tpls.push_back(make_pair(Statement::COMPOUND_STAT, stat_regex("\\{(.*?)\\}")));
-  stat_tpls.push_back(make_pair(Statement::DECL_STAT, stat_regex("i(.+?);")));
-  stat_tpls.push_back(make_pair(Statement::COMPOUND_STAT, stat_regex("\\{(.*?)\\}")));
-  stat_tpls.push_back(make_pair(Statement::DECL_STAT, stat_regex("i(.+?);")));
-  */
-  expr_tpls.push_back(make_pair(Expression::COMMA, expr_regex("(.+?),(.+)")));
+  expr_tpls.push_back(make_pair(Expression::COMMA, expr_regex("(.+),(.+)")));
   expr_tpls.push_back(make_pair(Expression::ASSIGNMENT, expr_regex("(.+?)=(.+)")));
-  expr_tpls.push_back(make_pair(Expression::EQUALITY, expr_regex("(.+?)[!e](.+)")));
-  expr_tpls.push_back(make_pair(Expression::RELATIONAL, expr_regex("(.+?)[gl><](.+)")));
-  expr_tpls.push_back(make_pair(Expression::ADDITIVE, expr_regex("(.+?)[\\+-](.+)")));
-  expr_tpls.push_back(make_pair(Expression::MULT, expr_regex("(.+?)[\\*/](.+)")));
+  expr_tpls.push_back(make_pair(Expression::EQUALITY, expr_regex("(.+)([!e])(.+)")));
+  expr_tpls.push_back(make_pair(Expression::RELATIONAL, expr_regex("(.+)([gl><])(.+)")));
+  expr_tpls.push_back(make_pair(Expression::ADDITIVE, expr_regex("(.+)([\\+-])(.+)")));
+  expr_tpls.push_back(make_pair(Expression::MULT, expr_regex("(.+)([\\*/])(.+)")));
   expr_tpls.push_back(make_pair(Expression::UNARY, expr_regex("[\\+-](.+)")));
-  expr_tpls.push_back(make_pair(Expression::POSTFIX, expr_regex("(.+?)[\\^v]")));
-  expr_tpls.push_back(make_pair(Expression::PRIMARY, expr_regex("[nas]")));
+  expr_tpls.push_back(make_pair(Expression::POSTFIX, expr_regex("(.+)[\\^v]")));
+  expr_tpls.push_back(make_pair(Expression::PRIMARY, expr_regex("([nas])")));
 }
 
 void Parser::encode_tokens(std::vector <Token>& tokens, string &s)

@@ -4,6 +4,16 @@
 
 using namespace std;
 
+void Parser::parse_init_decl(string::const_iterator str_begin,
+			     string::const_iterator str_end,
+			     size_t origin,
+			     AssignmentExpr& expr) 
+{
+  smatch m;
+  expr.id = tokens[origin].code;
+  parse_expr(str_begin+2, str_end, origin + 2, expr.expr);
+}
+
 string::const_iterator Parser::parse_decl_stat(string::const_iterator str_begin,
 					       string::const_iterator str_end,
 					       size_t origin,
@@ -20,10 +30,10 @@ string::const_iterator Parser::parse_decl_stat(string::const_iterator str_begin,
   for (; !end && str_begin != str_end; str_begin += len) {
     begin_pos = str_begin - str_origin + origin;
     if (regex_search(str_begin, str_end, m, regex("a=[^,;]"),
-		      regex_constants::match_continuous)){
+		     regex_constants::match_continuous)){
       len = m[0].str().length();
-      parse_assign_expr(m[0].first, m[0].second,
-			  begin_pos, assign_expr);
+      parse_init_decl(m[0].first, m[0].second,
+		      begin_pos, assign_expr);
       stat.decl_list.push_back(assign_expr);
     } else if('a' == *str_begin) {
       len = 1;
@@ -47,10 +57,10 @@ string::const_iterator Parser::parse_decl_stat(string::const_iterator str_begin,
 }
 
 void Parser::parse_stat_list(string::const_iterator str_begin,
-			 string::const_iterator str_end,
-			 size_t origin,
-			 vector< shared_ptr<Statement> >& stats,
-			 shared_ptr<Scope> scope)
+			     string::const_iterator str_end,
+			     size_t origin,
+			     vector< shared_ptr<Statement> >& stats,
+			     shared_ptr<Scope> scope)
 {
   size_t  begin_pos;
   auto str_origin = str_begin;
@@ -72,23 +82,26 @@ string::const_iterator Parser::parse_comp_stat(string::const_iterator str_begin,
   smatch m;
   string::const_iterator comp_end;
 
-  regex_search(str_begin, str_end, m, regex("\\{(.*?)\\}"), regex_constants::match_continuous);
-  parse_stat_list(m[1].first, m[1].second, origin + 1, stat.stat_list, make_shared<Scope>());
+  regex_search(str_begin, str_end, m, regex("\\{(.*?)\\}"),
+	       regex_constants::match_continuous);
+  parse_stat_list(m[1].first, m[1].second, origin + 1,
+		  stat.stat_list, stat.scope);
   return m[0].second;
 }
 
 
 string::const_iterator Parser::parse_print_stat(string::const_iterator str_begin,
-					       string::const_iterator str_end,
-					       size_t origin,
-					       PrintStat& stat)
+						string::const_iterator str_end,
+						size_t origin,
+						PrintStat& stat)
 {
   auto str_origin = str_begin;
   smatch m;
   size_t pos;
 
   str_begin+=2;
-  regex_search(str_begin, str_end, m, regex("(.+?)\\);"), regex_constants::match_continuous);
+  regex_search(str_begin, str_end, m, regex("(.+?)\\);"),
+	       regex_constants::match_continuous);
   pos = m[1].first - str_origin + origin;
   parse_expr(m[1].first, m[1].second, pos, stat.expr);
 
@@ -97,9 +110,9 @@ string::const_iterator Parser::parse_print_stat(string::const_iterator str_begin
 }
 
 string::const_iterator Parser::parse_select_stat(string::const_iterator str_begin,
-					       string::const_iterator str_end,
-					       size_t origin,
-					       SelectStat& stat)
+						 string::const_iterator str_end,
+						 size_t origin,
+						 SelectStat& stat)
 {
   auto str_origin = str_begin;
   smatch m;
@@ -107,7 +120,8 @@ string::const_iterator Parser::parse_select_stat(string::const_iterator str_begi
 
   //if(expr)
   str_begin+=2;
-  regex_search(str_begin, str_end, m, regex("(.+?)\\)"), regex_constants::match_continuous);
+  regex_search(str_begin, str_end, m, regex("(.+?)\\)"),
+	       regex_constants::match_continuous);
   pos = m[1].first - str_origin + origin;
   parse_expr(m[1].first, m[1].second, pos, stat.expr);
 
@@ -139,7 +153,8 @@ string::const_iterator Parser::parse_for_stat(string::const_iterator str_begin,
   for (int i = 0; i < 3; ++i, str_begin = m[0].second) {
     //we use a non-capturing group to capture the potential 'int'
     //, and treat the rest as expr
-    regex_search(str_begin, str_end, m, regex("(?:i)?(.*?)[;\\)]"), regex_constants::match_continuous);
+    regex_search(str_begin, str_end, m, regex("(?:i)?(.*?)[;\\)]"),
+		 regex_constants::match_continuous);
     pos = m[1].first - str_origin + origin;
     parse_expr(m[1].first, m[1].second, pos, stat.expr[i]);
   }
@@ -151,9 +166,9 @@ string::const_iterator Parser::parse_for_stat(string::const_iterator str_begin,
 }
 
 string::const_iterator Parser::parse_while_stat(string::const_iterator str_begin,
-					      string::const_iterator str_end,
-					      size_t origin,
-					      WhileStat& stat)
+						string::const_iterator str_end,
+						size_t origin,
+						WhileStat& stat)
 {
   auto str_origin = str_begin;
   smatch m;
@@ -170,6 +185,14 @@ string::const_iterator Parser::parse_while_stat(string::const_iterator str_begin
   str_begin = parse_stat(str_begin, str_end, pos, stat.stat, stat.scope);
 
   return str_begin;
+}
+
+string::const_iterator Parser::parse_break_stat(string::const_iterator str_begin,
+						string::const_iterator str_end,
+						size_t origin,
+						BreakStat& stat)
+{
+  return str_begin + 2;
 }
 
 string::const_iterator Parser::parse_do_stat(string::const_iterator str_begin,
@@ -223,60 +246,35 @@ string::const_iterator Parser::parse_stat(string::const_iterator str_begin,
   
   auto str_origin = str_begin;
   string::const_iterator stat_end;
-  
-  shared_ptr<DeclStat> decl_ptr;
-  shared_ptr<CompoundStat> comp_ptr;
-  shared_ptr<SelectStat> select_ptr;
-  shared_ptr<ForStat> for_ptr;
-  shared_ptr<WhileStat> while_ptr;
-  shared_ptr<DoStat> do_ptr;
-  shared_ptr<PrintStat> print_ptr;
-  shared_ptr<ExprStat> expr_ptr;
 
-  cout << *str_begin << " linum: "<< tokens[origin].linum <<endl;
+#define PARSE_STAT(T, v, scp)	{					\
+    shared_ptr<T> v##_ptr = make_shared<T>(scp, tokens[origin].linum);	\
+    stat_end = parse_##v##_stat(str_begin, str_end, origin, *v##_ptr);	\
+    stat_ptr = dynamic_pointer_cast<Statement>(v##_ptr);  }
+  
+  //  cout << *str_begin << " linum: "<< tokens[origin].linum <<endl;
   switch (*str_begin) {
-  case 'i':
-    decl_ptr = make_shared<DeclStat>(scope, tokens[origin].linum);
-    stat_end = parse_decl_stat(str_begin, str_end, origin, *decl_ptr);
-    stat_ptr = dynamic_pointer_cast<Statement>(decl_ptr);
+  case 'i': PARSE_STAT(DeclStat, decl, scope);
     break;
-  case 'p':
-    print_ptr = make_shared<PrintStat>(scope, tokens[origin].linum);
-    stat_end = parse_print_stat(str_begin, str_end, origin, *print_ptr);
-    stat_ptr = dynamic_pointer_cast<Statement>(print_ptr);
+  case 'p': PARSE_STAT(PrintStat, print, scope);
     break;
-  case '{':
-    comp_ptr = make_shared<CompoundStat>(scope, tokens[origin].linum);
-    stat_end = parse_comp_stat(str_begin, str_end, origin, *comp_ptr);
-    stat_ptr = dynamic_pointer_cast<Statement>(comp_ptr);
+  case '{': PARSE_STAT(CompoundStat, comp, make_shared<Scope>());
     break;
-  case '?':
-    select_ptr = make_shared<SelectStat>(scope, tokens[origin].linum);
-    stat_end = parse_select_stat(str_begin, str_end, origin, *select_ptr);
-    stat_ptr = dynamic_pointer_cast<Statement>(select_ptr);
+  case '?': PARSE_STAT(SelectStat, select, scope);
     break;
-  case 'f':
-    //for has its own scope
-    for_ptr = make_shared<ForStat>(make_shared<Scope>(), tokens[origin].linum);
-    stat_end = parse_for_stat(str_begin, str_end, origin, *for_ptr);
-    stat_ptr = dynamic_pointer_cast<Statement>(for_ptr);
+  case 'f': PARSE_STAT(ForStat, for, make_shared<Scope>());
     break;
-  case 'w':
-    while_ptr = make_shared<WhileStat>(scope, tokens[origin].linum);
-    stat_end = parse_while_stat(str_begin, str_end, origin, *while_ptr);
-    stat_ptr = dynamic_pointer_cast<Statement>(while_ptr);
+  case 'w': PARSE_STAT(WhileStat, while, scope);
     break;
-  case 'd':
-    do_ptr = make_shared<DoStat>(scope, tokens[origin].linum);
-    stat_end = parse_do_stat(str_begin, str_end, origin, *do_ptr);
-    stat_ptr = dynamic_pointer_cast<Statement>(do_ptr);
+  case 'd': PARSE_STAT(DoStat, do, scope);
     break;
-  default:
-    expr_ptr = make_shared<ExprStat>(scope, tokens[origin].linum);
-    stat_end = parse_expr_stat(str_begin, str_end, origin, *expr_ptr);
-    stat_ptr = dynamic_pointer_cast<Statement>(expr_ptr);
+  case 'b': PARSE_STAT(BreakStat, break, scope);
+    break;
+  default: PARSE_STAT(ExprStat, expr, scope);
     break;
   }
 
   return stat_end;
+  
+#undef PARSE_STAT
 }
