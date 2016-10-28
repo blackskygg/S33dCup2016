@@ -31,5 +31,6 @@
 # ycm config
 .ycm_extra_conf.py
 
-# vim history
+# vim
 *~
+*.swp
