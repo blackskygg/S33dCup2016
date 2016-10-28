@@ -18,7 +18,13 @@ class Identifier {
 
 class Scope {
  public:
+  Scope() {parent = nullptr;}; 
+  Scope(std::shared_ptr<Scope> parent) : parent(parent) {};
   Identifier& get_identifier(std::string name);
+
+ private:
+  std::shared_ptr<Scope> parent;
+  std::unordered_map<std::string, int> vars;
 };
 
 class Expression{
@@ -80,15 +86,16 @@ class Statement {
   }StatType;
 
   Statement() = default;
-  Statement(std::shared_ptr<Scope> scope): scope(scope) {};
+  Statement(std::shared_ptr<Scope> scope, int linum): scope(scope), linum(linum) {};
   int execute() {};
 
   std::shared_ptr<Scope> scope;
+  int linum;
 };
 
 class DeclStat: public Statement {
  public:
-  DeclStat(std::shared_ptr<Scope> scope) : Statement(scope) {};
+  DeclStat(std::shared_ptr<Scope> scope, int linum): Statement(scope, linum) {};
   int execute();
 
   std::vector<AssignmentExpr> decl_list;
@@ -96,7 +103,7 @@ class DeclStat: public Statement {
 
 class CompoundStat: public Statement {
  public:
-  CompoundStat(std::shared_ptr<Scope> scope) : Statement(scope){};
+  CompoundStat(std::shared_ptr<Scope> scope, int linum): Statement(scope, linum) {};
   int execute();
   
   std::vector< std::shared_ptr<Statement> > stat_list;
@@ -104,7 +111,7 @@ class CompoundStat: public Statement {
 
 class SelectStat: public Statement {
  public:
-  SelectStat(std::shared_ptr<Scope> scope) : Statement(scope){};
+  SelectStat(std::shared_ptr<Scope> scope, int linum): Statement(scope, linum) {};
   int execute();
 
   std::shared_ptr<Expression> expr;
@@ -114,7 +121,7 @@ class SelectStat: public Statement {
 
 class ForStat: public Statement {
  public:
-  ForStat(std::shared_ptr<Scope> scope) : Statement(scope){};
+  ForStat(std::shared_ptr<Scope> scope, int linum): Statement(scope, linum) {};
   int execute();
 
   std::shared_ptr<Expression> expr[3];
@@ -123,7 +130,7 @@ class ForStat: public Statement {
 
 class WhileStat: public Statement {
  public:
-  WhileStat(std::shared_ptr<Scope> scope) : Statement(scope){};
+  WhileStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum) {};
   int execute();
 
   std::shared_ptr<Expression> expr;
@@ -132,7 +139,7 @@ class WhileStat: public Statement {
 
 class DoStat: public Statement {
  public:
-  DoStat(std::shared_ptr<Scope> scope) : Statement(scope){};
+  DoStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum) {};
   int execute();
 
   std::shared_ptr<Expression> expr;
@@ -141,7 +148,7 @@ class DoStat: public Statement {
 
 class PrintStat: public Statement {
  public:
-  PrintStat(std::shared_ptr<Scope> scope) : Statement(scope){};
+  PrintStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum){};
   int execute();
 
   std::shared_ptr<Expression> expr;
@@ -149,7 +156,7 @@ class PrintStat: public Statement {
 
 class ExprStat : public Statement {
  public:
- ExprStat(std::shared_ptr<Scope> scope) : Statement(scope){};
+ ExprStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum) {};
   int execute();
   
   std::shared_ptr<Expression> expr;

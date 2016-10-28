@@ -214,7 +214,7 @@ string::const_iterator Parser::parse_expr_stat(string::const_iterator str_begin,
 
 string::const_iterator Parser::parse_stat(string::const_iterator str_begin,
 					  string::const_iterator str_end,
-					  size_t orgin,
+					  size_t origin,
 					  shared_ptr<Statement>& stat_ptr,
 					  std::shared_ptr<Scope> scope)
 {
@@ -233,46 +233,47 @@ string::const_iterator Parser::parse_stat(string::const_iterator str_begin,
   shared_ptr<PrintStat> print_ptr;
   shared_ptr<ExprStat> expr_ptr;
 
-  cout << *str_begin <<endl;
+  cout << *str_begin << " linum: "<< tokens[origin].linum <<endl;
   switch (*str_begin) {
   case 'i':
-    decl_ptr = make_shared<DeclStat>(scope);
-    stat_end = parse_decl_stat(str_begin, str_end, 0, *decl_ptr);
+    decl_ptr = make_shared<DeclStat>(scope, tokens[origin].linum);
+    stat_end = parse_decl_stat(str_begin, str_end, origin, *decl_ptr);
     stat_ptr = dynamic_pointer_cast<Statement>(decl_ptr);
     break;
   case 'p':
-    print_ptr = make_shared<PrintStat>(scope);
-    stat_end = parse_print_stat(str_begin, str_end, 0, *print_ptr);
+    print_ptr = make_shared<PrintStat>(scope, tokens[origin].linum);
+    stat_end = parse_print_stat(str_begin, str_end, origin, *print_ptr);
     stat_ptr = dynamic_pointer_cast<Statement>(print_ptr);
     break;
   case '{':
-    comp_ptr = make_shared<CompoundStat>(scope);
-    stat_end = parse_comp_stat(str_begin, str_end, 0, *comp_ptr);
+    comp_ptr = make_shared<CompoundStat>(scope, tokens[origin].linum);
+    stat_end = parse_comp_stat(str_begin, str_end, origin, *comp_ptr);
     stat_ptr = dynamic_pointer_cast<Statement>(comp_ptr);
     break;
   case '?':
-    select_ptr = make_shared<SelectStat>(scope);
-    stat_end = parse_select_stat(str_begin, str_end, 0, *select_ptr);
+    select_ptr = make_shared<SelectStat>(scope, tokens[origin].linum);
+    stat_end = parse_select_stat(str_begin, str_end, origin, *select_ptr);
     stat_ptr = dynamic_pointer_cast<Statement>(select_ptr);
     break;
   case 'f':
-    for_ptr = make_shared<ForStat>(make_shared<Scope>());
-    stat_end = parse_for_stat(str_begin, str_end, 0, *for_ptr);
+    //for has its own scope
+    for_ptr = make_shared<ForStat>(make_shared<Scope>(), tokens[origin].linum);
+    stat_end = parse_for_stat(str_begin, str_end, origin, *for_ptr);
     stat_ptr = dynamic_pointer_cast<Statement>(for_ptr);
     break;
   case 'w':
-    while_ptr = make_shared<WhileStat>(scope);
-    stat_end = parse_while_stat(str_begin, str_end, 0, *while_ptr);
+    while_ptr = make_shared<WhileStat>(scope, tokens[origin].linum);
+    stat_end = parse_while_stat(str_begin, str_end, origin, *while_ptr);
     stat_ptr = dynamic_pointer_cast<Statement>(while_ptr);
     break;
   case 'd':
-    do_ptr = make_shared<DoStat>(scope);
-    stat_end = parse_do_stat(str_begin, str_end, 0, *do_ptr);
+    do_ptr = make_shared<DoStat>(scope, tokens[origin].linum);
+    stat_end = parse_do_stat(str_begin, str_end, origin, *do_ptr);
     stat_ptr = dynamic_pointer_cast<Statement>(do_ptr);
     break;
   default:
-    expr_ptr = make_shared<ExprStat>(scope);
-    stat_end = parse_expr_stat(str_begin, str_end, 0, *expr_ptr);
+    expr_ptr = make_shared<ExprStat>(scope, tokens[origin].linum);
+    stat_end = parse_expr_stat(str_begin, str_end, origin, *expr_ptr);
     stat_ptr = dynamic_pointer_cast<Statement>(expr_ptr);
     break;
   }
