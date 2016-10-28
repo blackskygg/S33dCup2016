@@ -9,7 +9,6 @@ enum syntax_type {
     SYN_DECL,
     INIT_DECL_LIST,
     INIT_DECL,
-    STAT,
     EXP_STAT,
     COMPOUND_STAT,
     SELECTION_STAT,
