@@ -10,6 +10,11 @@ char *read_code(const char *fname)
 {
     FILE *fcode = fopen(fname, "rb");
 
+    if (fcode == NULL) {
+        perror("cannot open code file");
+        exit(1);
+    }
+
     fseek(fcode, 0, SEEK_END);
     size_t fsize = ftell(fcode);
     rewind(fcode);
