@@ -1,7 +1,10 @@
 CC=clang
 CFLAGS=-Wall -g
 
-all: main.o token.o syntax.o
+all:
+	make -j `getconf _NPROCESSORS_ONLN` compile_all
+
+compile_all: main.o token.o syntax.o
 	$(CC) $(CFLAGS) -o SeedCup2016.exe main.o token.o syntax.o
 
 main: main.c
