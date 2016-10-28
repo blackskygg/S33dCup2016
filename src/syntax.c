@@ -32,10 +32,14 @@ void print_ast(struct syntax_node *root, size_t level)
 
         for (size_t i = 0; i < level; i++)
             putchar('\t');
-        printf("(%d) [%d] \"", root->type, t->type);
-        for (size_t i = 0; i < t->length; i++)
-            putchar(t->literal[i]);
-        printf("\"\n");
+        printf("(%d) [%d] ", root->type, t->type);
+        if (t->type == ID || t->type == STRING || t->type == INT_CONST) {
+            putchar('\"');
+            for (size_t i = 0; i < t->length; i++)
+                putchar(t->literal[i]);
+            putchar('\"');
+        }
+        printf(" <%ld>\n", t->line);
 
         print_ast(root->children, level + 1);
         print_ast(root->sibling, level);
