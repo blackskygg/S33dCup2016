@@ -7,7 +7,6 @@
 enum syntax_type {
     SYN_STAT_LIST,
     SYN_DECL,
-    SYN_INIT_DECL_LIST,
     SYN_INIT_DECL,
     SYN_EXP_STAT,
     SYN_COMPOUND_STAT,
@@ -18,7 +17,6 @@ enum syntax_type {
     SYN_JUMP_STAT,
     SYN_PRINT_STAT,
     SYN_ARGUMENT_LIST,
-    SYN_EXPRESSION,
     SYN_ASSIGNMENT_EXP,
     SYN_EQUALITY_EXP,
     SYN_RELATIONAL_EXP,

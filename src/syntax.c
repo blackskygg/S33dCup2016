@@ -33,12 +33,10 @@ void print_ast(struct syntax_node *root, size_t level)
         for (size_t i = 0; i < level; i++)
             putchar('\t');
         printf("(%d) [%ld] ", root->type, root->token_idx);
-        // if (t->type == ID || t->type == STRING || t->type == INT_CONST) {
-            printf("\"");
-            for (size_t i = 0; i < t->length; i++)
-                putchar(t->literal[i]);
-            printf("\" ");
-        // }
+        printf("\"");
+        for (size_t i = 0; i < t->length; i++)
+            putchar(t->literal[i]);
+        printf("\" ");
         printf("<%ld>\n", t->line);
 
         print_ast(root->children, level + 1);
@@ -94,11 +92,11 @@ struct syntax_node *decl_stat(size_t *idx)
     node->type = SYN_DECL;
     node->token_idx = *idx;
 
-    consume();
+    consume(); // int
 
     node->children = init_decl_list(idx);
 
-    consume();
+    consume(); // ;
 
     node->sibling = NULL;
 
@@ -110,25 +108,15 @@ struct syntax_node *init_decl_list(size_t *idx)
     if (!check(ID))
         return NULL;
 
-    struct syntax_node *head = malloc_node();
+    struct syntax_node *head = init_decl(idx);
 
-    head->type = SYN_INIT_DECL_LIST;
-    head->token_idx = *idx;
-    head->children = init_decl(idx);
+    struct syntax_node *iter = head;
+    while (iter && check(COMMA)) {
+        consume(); // ,
 
-    struct syntax_node *iter = head->children;
-    while (iter) {
-        if (check(COMMA)) {
-            consume();
-            iter->sibling = init_decl(idx);
-            iter = iter->sibling;
-        } else {
-            iter->sibling = NULL;
-            break;
-        }
+        iter->sibling = init_decl(idx);
+        iter = iter->sibling;
     }
-
-    head->sibling = NULL;
 
     return head;
 }
@@ -142,15 +130,10 @@ struct syntax_node *init_decl(size_t *idx)
     node->type = SYN_INIT_DECL;
     node->token_idx = *idx;
 
-    node->children = malloc_node();
-    node->children->type = SYN_ID;
-    node->children->token_idx = *idx;
-    node->children->children = NULL;
-
-    consume();
+    node->children = primary_exp(idx);
 
     if (check(ASSIGN)) {
-        consume();
+        consume(); // =
         node->children->sibling = assignment_exp(idx);
     } else {
         node->children->sibling = NULL;
@@ -176,7 +159,7 @@ struct syntax_node *exp_stat(size_t *idx)
         else
             node->children = expression(idx);
 
-        consume();
+        consume(); // ;
 
         node->sibling = NULL;
 
@@ -195,11 +178,11 @@ struct syntax_node *compound_stat(size_t *idx)
     node->type = SYN_COMPOUND_STAT;
     node->token_idx = *idx;
 
-    consume();
+    consume(); // {
 
     node->children = stat_list(idx);
 
-    consume();
+    consume(); // }
 
     node->sibling = NULL;
 
@@ -257,22 +240,17 @@ struct syntax_node *argument_list(size_t *idx)
 
 struct syntax_node *expression(size_t *idx)
 {
-    struct syntax_node *node = malloc_node();
-    node->type = SYN_EXPRESSION;
-    node->token_idx = *idx;
+    struct syntax_node *head = assignment_exp(idx);
 
-    node->children = assignment_exp(idx);
-
-    struct syntax_node *iter = node->children;
+    struct syntax_node *iter = head;
     while (iter && check(COMMA)) {
         consume();
+
         iter->sibling = assignment_exp(idx);
         iter = iter->sibling;
     }
 
-    node->sibling = NULL;
-
-    return node;
+    return head;
 }
 
 struct syntax_node *assignment_exp(size_t *idx)
@@ -287,7 +265,9 @@ struct syntax_node *assignment_exp(size_t *idx)
 
     consume();
 
-    node->sibling = assignment_exp(idx);
+    node->children->sibling = assignment_exp(idx);
+
+    node->sibling = NULL;
 
     return node;
 }
