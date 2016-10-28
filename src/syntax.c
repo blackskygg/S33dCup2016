@@ -46,9 +46,6 @@ void print_ast(struct syntax_node *root, size_t level)
 
 struct syntax_node *stat_list(size_t *idx)
 {
-    if (check(END))
-        return NULL;
-
     struct syntax_node *head = malloc_node();
 
     head->type = SYN_STAT_LIST;
@@ -77,16 +74,13 @@ struct syntax_node *stat(size_t *idx)
     case FOR: return for_stat(idx);
     case BREAK: return jump_stat(idx);
     case PRINTF: return print_stat(idx);
-    case END: return NULL;
+    case END: case RBRACE: return NULL;
     default: return exp_stat(idx);
     }
 }
 
 struct syntax_node *decl_stat(size_t *idx)
 {
-    if (!check(DECL))
-        return NULL;
-
     struct syntax_node *node = malloc_node();
 
     node->type = SYN_DECL;
@@ -146,34 +140,25 @@ struct syntax_node *init_decl(size_t *idx)
 
 struct syntax_node *exp_stat(size_t *idx)
 {
-    if (check(ID) || check(INT_CONST) ||
-        check(ADD) || check(SUB) ||
-        check(SEMI_COLON)) {
+    struct syntax_node *node = malloc_node();
 
-        struct syntax_node *node = malloc_node();
-        node->type = SYN_EXP_STAT;
-        node->token_idx = *idx;
+    node->type = SYN_EXP_STAT;
+    node->token_idx = *idx;
 
-        if (check(SEMI_COLON))
-            node->children = NULL;
-        else
-            node->children = expression(idx);
+    if (check(SEMI_COLON))
+        node->children = NULL;
+    else
+        node->children = expression(idx);
 
-        consume(); // ;
+    consume(); // ;
 
-        node->sibling = NULL;
+    node->sibling = NULL;
 
-        return node;
-    } else {
-        return NULL;
-    }
+    return node;
 }
 
 struct syntax_node *compound_stat(size_t *idx)
 {
-    if (!check(LBRACE))
-        return NULL;
-
     struct syntax_node *node = malloc_node();
     node->type = SYN_COMPOUND_STAT;
     node->token_idx = *idx;
@@ -211,17 +196,15 @@ struct syntax_node *for_stat(size_t *idx)
 
 struct syntax_node *jump_stat(size_t *idx)
 {
-    if (!check(BREAK))
-        return NULL;
     struct syntax_node *node = malloc_node();
     node->type = SYN_JUMP_STAT;
     node->token_idx = *idx;
 
-    consume();
+    consume(); // break
 
     node->children = NULL;
 
-    consume();
+    consume(); // ;
 
     node->sibling = NULL;
 
@@ -243,8 +226,9 @@ struct syntax_node *expression(size_t *idx)
     struct syntax_node *head = assignment_exp(idx);
 
     struct syntax_node *iter = head;
+
     while (iter && check(COMMA)) {
-        consume();
+        consume(); // ,
 
         iter->sibling = assignment_exp(idx);
         iter = iter->sibling;
@@ -263,7 +247,7 @@ struct syntax_node *assignment_exp(size_t *idx)
     node->children = primary_exp(idx);
     node->token_idx = *idx;
 
-    consume();
+    consume(); // ID
 
     node->children->sibling = assignment_exp(idx);
 
@@ -275,12 +259,13 @@ struct syntax_node *assignment_exp(size_t *idx)
 struct syntax_node *equality_exp(size_t *idx)
 {
     struct syntax_node *node = malloc_node();
+
     node->type = SYN_EQUALITY_EXP;
     node->children = relational_exp(idx);
     node->token_idx = *idx;
 
     if (check(EQ) || check(NE)) {
-        consume();
+        consume(); // == | !=
 
         node->sibling = equality_exp(idx);
 
@@ -295,12 +280,13 @@ struct syntax_node *equality_exp(size_t *idx)
 struct syntax_node *relational_exp(size_t *idx)
 {
     struct syntax_node *node = malloc_node();
+
     node->type = SYN_RELATIONAL_EXP;
     node->children = additive_exp(idx);
     node->token_idx = *idx;
 
     if (check(GT) || check(LT) || check(GE) || check(LE)) {
-        consume();
+        consume(); // > | < | >= | <=
 
         node->sibling = relational_exp(idx);
 
@@ -316,12 +302,13 @@ struct syntax_node *relational_exp(size_t *idx)
 struct syntax_node *additive_exp(size_t *idx)
 {
     struct syntax_node *node = malloc_node();
+
     node->type = SYN_ADDITIVE_EXP;
     node->children = mult_exp(idx);
     node->token_idx = *idx;
 
     if (check(ADD) || check(SUB)) {
-        consume();
+        consume(); // + | -
 
         node->sibling = additive_exp(idx);
 
@@ -336,12 +323,13 @@ struct syntax_node *additive_exp(size_t *idx)
 struct syntax_node *mult_exp(size_t *idx)
 {
     struct syntax_node *node = malloc_node();
+
     node->type = SYN_MULT_EXP;
     node->children = unary_exp(idx);
     node->token_idx = *idx;
 
     if (check(MUL) || check(DIV)) {
-        consume();
+        consume(); // * | /
 
         node->sibling = mult_exp(idx);
 
@@ -356,6 +344,7 @@ struct syntax_node *mult_exp(size_t *idx)
 struct syntax_node *unary_exp(size_t *idx)
 {
     struct syntax_node *node = malloc_node();
+
     node->type = SYN_UNARY_EXP;
     node->token_idx = *idx;
 
@@ -365,7 +354,7 @@ struct syntax_node *unary_exp(size_t *idx)
         (*iter)->type = check(ADD) ? SYN_POS : SYN_NEG;
         (*iter)->token_idx = *idx;
 
-        consume();
+        consume(); // + | -
 
         (*iter)->children = NULL;
         (*iter)->sibling = NULL;
@@ -387,6 +376,7 @@ struct syntax_node *unary_exp(size_t *idx)
 struct syntax_node *postfix_exp(size_t *idx)
 {
     struct syntax_node *node = malloc_node();
+
     node->type = SYN_POSTFIX_EXP;
     node->token_idx = *idx;
     node->children = primary_exp(idx);
@@ -422,11 +412,12 @@ struct syntax_node *postfix_exp(size_t *idx)
 struct syntax_node *primary_exp(size_t *idx)
 {
     struct syntax_node *node = NULL;
+
     if (check(ID)) {
         node = malloc_node();
         node->type = SYN_ID;
         node->token_idx = *idx;
-        
+
         consume();
 
         node->children = NULL;

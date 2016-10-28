@@ -46,6 +46,7 @@ int main(int argc, char const *argv[])
         tokens[token_count] = t;
         token_count++;
     }
+    tokens[token_count].type = END;
 
     /* DEBUG display
     for (size_t i = 0; i < token_count; i++) {
@@ -54,7 +55,6 @@ int main(int argc, char const *argv[])
             putchar(tokens[i].literal[j]);
         printf("\"\t%ld\n", tokens[i].line);
     }
-    tokens[token_count].type = END;
     printf("token_count = %ld\n", token_count);
     */
 
