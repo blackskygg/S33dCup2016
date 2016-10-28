@@ -69,44 +69,50 @@ class Statement {
  public:
 
   typedef enum {
-    COMPOUND_STAT = 0,
-    DECL_STAT = 1,
+    DECL_STAT = 0,
+    COMPOUND_STAT = 1,
+    SELECTION_STAT = 2,
+    ITERATION_STAT_DO = 3,
+    ITERATION_STAT_WHILE = 4,
+    ITERATION_STAT_FOR = 5,
+    JUMP_STAT = 6,
+    PRINT_STAT = 7,
   }StatType;
 
   Statement() = default;
- Statement(size_t begin, size_t end, std::shared_ptr<Scope> scope):
-  begin(begin), end(end), scope(scope) {};
+  Statement(std::shared_ptr<Scope> scope): scope(scope) {};
   int execute() {};
-
-  //begin and end are the positions of the begining and ending tokens
-  size_t begin;
-  size_t end;
 
   std::shared_ptr<Scope> scope;
 };
 
-class CompoundStatement: public Statement {
+class DeclStat: public Statement {
  public:
+  DeclStat(std::shared_ptr<Scope> scope) : Statement(scope) {};
   int execute();
+
+  std::vector<AssignmentExpr> decl_list;
+};
+
+class CompoundStat: public Statement {
+ public:
+  CompoundStat(std::shared_ptr<Scope> scope) : Statement(scope){};
+  int execute();
+  
+  std::vector< std::shared_ptr<Statement> > stat_list;
+};
+
+class SelectStat: public Statement {
+ public:
+ CompoundStat(std::shared_ptr<Scope> scope) : Statement(scope){};
+  int execute();
+
   std::vector< std::shared_ptr<Statement> > stat_list;
 };
 
 class ExpressionStat : public Statement {
  public:
   std::shared_ptr<Expression> expr;
-};
-
-typedef std::vector<AssignmentExpr> InitDeclaratorList;
-class DeclStat: public Statement {
- public:
-  DeclStat(size_t begin, size_t end, std::shared_ptr<Scope> scope) {
-    this->begin = begin;
-    this->end = end;
-    this->scope = scope;
-  };
-  
-  int execute();
-  InitDeclaratorList decl_list;
 };
 
 
@@ -127,16 +133,25 @@ class Parser {
 			 std::string::const_iterator end,
 			 size_t origin,
 			 AssignmentExpr& expr);
-  void parse_decl_stat(std::string::const_iterator begin,
-		       std::string::const_iterator end,
-		       size_t origin,
-		       DeclStat& stat);
   void parse_stats(std::string::const_iterator begin,
 		   std::string::const_iterator end,
 		   size_t origin,
 		   std::vector< std::shared_ptr<Statement> >& stats,
-		   std::vector<Token> &tokens,
 		   std::shared_ptr<Scope> scope);
+  std::string::const_iterator parse_comp_stat(std::string::const_iterator str_begin,
+					      std::string::const_iterator str_end,
+					      size_t origin,
+					      CompoundStat& stat);
+  std::string::const_iterator parse_decl_stat(std::string::const_iterator begin,
+					      std::string::const_iterator end,
+					      size_t origin,
+					      DeclStat& stat);
+  std::string::const_iterator parse_stat(std::string::const_iterator begin,
+					 std::string::const_iterator end,
+					 size_t origin,
+					 std::shared_ptr<Statement>& stats,
+					 std::shared_ptr<Scope> scope);
+  
   void encode_tokens(std::vector <Token>& tokens, std::string &s);
 
   std::vector< std::pair<Statement::StatType, std::regex> > stat_tpls;
