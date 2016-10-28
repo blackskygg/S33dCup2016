@@ -44,6 +44,9 @@ void print_ast(struct syntax_node *root, size_t level)
 
 struct syntax_node *stat_list(size_t *idx)
 {
+    if (check(END))
+        return NULL;
+
     struct syntax_node *head = malloc_node();
 
     head->type = STAT_LIST;
@@ -72,12 +75,16 @@ struct syntax_node *stat(size_t *idx)
     case FOR: return for_stat(idx);
     case BREAK: return jump_stat(idx);
     case PRINTF: return print_stat(idx);
+    case END: return NULL;
     default: return exp_stat(idx);
     }
 }
 
 struct syntax_node *decl_stat(size_t *idx)
 {
+    if (!check(DECL))
+        return NULL;
+
     struct syntax_node *node = malloc_node();
 
     node->type = SYN_DECL;
@@ -96,6 +103,9 @@ struct syntax_node *decl_stat(size_t *idx)
 
 struct syntax_node *init_decl_list(size_t *idx)
 {
+    if (!check(ID))
+        return NULL;
+
     struct syntax_node *head = malloc_node();
 
     head->type = INIT_DECL_LIST;
@@ -149,41 +159,86 @@ struct syntax_node *init_decl(size_t *idx)
 
 struct syntax_node *exp_stat(size_t *idx)
 {
-    return NULL;
+    if (check(ID) || check(INT_CONST) ||
+        check(ADD) || check(SUB) ||
+        check(SEMI_COLON)) {
+
+        struct syntax_node *node = malloc_node();
+        node->type = EXP_STAT;
+        node->token_idx = *idx;
+
+        if (check(SEMI_COLON))
+            node->children = NULL;
+        else
+            node->children = expression(idx);
+
+        node->sibling = NULL;
+
+        consume(SEMI_COLON);
+
+        return node;
+    } else {
+        return NULL;
+    }
 }
+
 struct syntax_node *compound_stat(size_t *idx)
 {
-    return NULL;
+    if (!check(LBRACE))
+        return NULL;
+
+    struct syntax_node *node = malloc_node();
+    node->type = COMPOUND_STAT;
+    node->token_idx = *idx;
+
+    consume(LBRACE);
+
+    node->children = stat_list(idx);
+
+    consume(RBRACE);
+
+    node->sibling = NULL;
+
+    return node;
 }
+
 struct syntax_node *selection_stat(size_t *idx)
 {
     return NULL;
 }
+
 struct syntax_node *while_stat(size_t *idx)
 {
     return NULL;
 }
+
 struct syntax_node *do_while_stat(size_t *idx)
 {
     return NULL;
 }
+
 struct syntax_node *for_stat(size_t *idx)
 {
     return NULL;
 }
+
 struct syntax_node *jump_stat(size_t *idx)
 {
     return NULL;
 }
+
 struct syntax_node *print_stat(size_t *idx)
 {
     return NULL;
 }
+
 struct syntax_node *argument_list(size_t *idx)
 {
     return NULL;
 }
+
 struct syntax_node *expression(size_t *idx)
 {
     return NULL;
 }
+
