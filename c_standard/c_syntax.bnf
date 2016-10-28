@@ -1,12 +1,10 @@
 %token int_const id string
 %%
 
-stat_list       :   decl
-                |   stat
-                |   stat_list decl
+stat_list       :   stat
                 |   stat_list stat
                 ;
-decl            :   'int' init_decl_list ';'
+decl_stat       :   'int' init_decl_list ';'
                 ;
 init_decl_list  :   init_decl
                 |   init_decl_list ',' init_decl
@@ -14,7 +12,8 @@ init_decl_list  :   init_decl
 init_decl       :   id
                 |   id '=' assignment_exp
                 ;
-stat            :   exp_stat
+stat            :   decl_stat
+                |   exp_stat
                 |   compound_stat
                 |   selection_stat
                 |   iteration_stat
