@@ -20,7 +20,8 @@ class Scope {
  public:
   Scope() {parent = nullptr;}; 
   Scope(std::shared_ptr<Scope> parent) : parent(parent) {};
-  Identifier& get_identifier(std::string name);
+  int get_identifier(std::string name);
+  void set_identifier(std::string name, int val);
 
  private:
   std::shared_ptr<Scope> parent;
@@ -41,7 +42,7 @@ class Expression{
     PRIMARY = 8,
   } ExprType;
 
-  int eval(Scope &scope) {};
+  virtual int eval(Scope &scope)  = 0;
 };
 
 class AssignmentExpr: public Expression {
@@ -104,14 +105,6 @@ class UnaryExpr: public Expression {
   std::shared_ptr<Expression> expr;
 };
 
-class PostfixExpr: public Expression {
- public:
-  int eval(Scope &scope);
-  
-  std::string op; 
-  std::shared_ptr<Expression> expr;
-};
-
 class PrimaryExprConst: public Expression {
  public:
   PrimaryExprConst(int val): val(val) {};
@@ -127,6 +120,14 @@ class PrimaryExprId: public Expression {
   int eval(Scope &scope);
   
   std::string id;
+};
+
+class PostfixExpr: public Expression {
+ public:
+  int eval(Scope &scope);
+  
+  std::string op; 
+  std::shared_ptr<Expression> expr;
 };
 
 class Statement {

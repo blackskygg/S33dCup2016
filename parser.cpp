@@ -4,8 +4,94 @@
 
 using namespace std;
 
-Identifier& Scope::get_identifier(string name)
+int Scope::get_identifier(string name)
 {
+  unordered_map<string, int>::iterator it;
+  if (vars.end() == (it = vars.find(name)) && (parent != nullptr))
+    return parent->get_identifier(name);
+  else
+    return it->second;
+}
+
+void Scope::set_identifier(string name, int val)
+{
+  vars[name] = val;
+}
+
+int CommaExpr:: eval(Scope& scope)
+{
+  expr1->eval(scope);
+  return expr2->eval(scope);
+}
+
+int EqualityExpr:: eval(Scope& scope)
+{
+  int val1 = expr1->eval(scope), val2 = expr2->eval(scope);
+  int ret_val = 1;
+
+  if ("!=" == op) ret_val = 1;
+  return val1 == val2 ? ret_val : !ret_val;
+}
+
+int RelationalExpr:: eval(Scope& scope)
+{
+  int val1 = expr1->eval(scope), val2 = expr2->eval(scope);
+
+  if (">=" == op) {
+    return val1 >= val2 ? 1 : 0;
+  } else if("<=" == op) {
+    return val1 <= val2 ? 1 : 0;
+  } else if(">" == op) {
+    return val1 > val2 ? 1 : 0;
+  } else if("<" == op) {
+    return val1 < val2 ? 1 : 0;
+  }
+}
+
+int AdditiveExpr:: eval(Scope& scope)
+{
+  int val1 = expr1->eval(scope), val2 = expr2->eval(scope);
+
+  if ("+" == op) {
+    return val1 + val2;
+  } else if("-" == op) {
+    return val1 - val2;
+  }
+}
+
+int MultExpr:: eval(Scope& scope)
+{
+  int val1 = expr1->eval(scope), val2 = expr2->eval(scope);
+
+  if ("*" == op) {
+    return val1 * val2;
+  } else if("/" == op) {
+    return val1 / val2;
+  }
+}
+
+int UnaryExpr:: eval(Scope& scope)
+{
+  int val = expr->eval(scope);
+
+  if ("-" == op) {
+    return -val;
+  } else if("+" == op) {
+    return val;
+  }
+}
+
+int PostfixExpr:: eval(Scope& scope)
+{
+  int val = expr->eval(scope);
+  string& id = dynamic_pointer_cast<PrimaryExprId>(expr)->id;
+  if ("++" == op) {
+    scope.set_identifier(id, val + 1);
+    return val + 1;
+  } else if("--" == op) {
+    scope.set_identifier(id, val - 1);
+    return val - 1;
+  }
 }
 
 int PrimaryExprConst:: eval(Scope& scope)
@@ -15,12 +101,15 @@ int PrimaryExprConst:: eval(Scope& scope)
 
 int PrimaryExprId:: eval(Scope& scope)
 {
-  return scope.get_identifier(id).val;
+  return scope.get_identifier(id);
 }
 
 int AssignmentExpr::eval(Scope& scope)
 {
-  return scope.get_identifier(id).val = expr->eval(scope);
+  int val = expr->eval(scope);
+  
+  scope.set_identifier(id, val);
+  return val;
 }
 
 int DeclStat::execute()

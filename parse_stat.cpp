@@ -258,11 +258,11 @@ string::const_iterator Parser::parse_stat(string::const_iterator str_begin,
     break;
   case 'p': PARSE_STAT(PrintStat, print, scope);
     break;
-  case '{': PARSE_STAT(CompoundStat, comp, make_shared<Scope>());
+  case '{': PARSE_STAT(CompoundStat, comp, make_shared<Scope>(scope));
     break;
   case '?': PARSE_STAT(SelectStat, select, scope);
     break;
-  case 'f': PARSE_STAT(ForStat, for, make_shared<Scope>());
+  case 'f': PARSE_STAT(ForStat, for, make_shared<Scope>(scope));
     break;
   case 'w': PARSE_STAT(WhileStat, while, scope);
     break;
