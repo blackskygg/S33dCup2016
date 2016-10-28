@@ -22,6 +22,7 @@ stat            :   exp_stat
                 |   print_stat
                 ;
 exp_stat        :   exp ';'
+                |   ';'
                 ;
 compound_stat   :   '{' stat_list '}'
                 |   '{' '}'
