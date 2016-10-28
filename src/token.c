@@ -53,7 +53,7 @@ void token_regex_init()
 struct token token_scan(char *code)
 {
     static int line = 1;
-    struct token token = { 0, NULL, 0, 0 };
+    struct token token = { SP, NULL, 0, 0 };
 
     for (size_t i = 0; i < TOKEN_TYPE_NUM; i++) {
         regmatch_t matched;
