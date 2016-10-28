@@ -63,6 +63,9 @@ void Parser::parse_expr(string::const_iterator str_begin,
 	expr = dynamic_pointer_cast<Expression>				\
 	  (make_shared<PrimaryExprConst>				\
 	   (atoi(tokens[begin_pos].code.c_str())));
+      } else  if (m[0].str() == "n") {
+	expr = dynamic_pointer_cast<Expression>				\
+	  (make_shared<PrimaryExprConst>(0));
       } else {
 	expr = dynamic_pointer_cast<Expression>				\
 	  (make_shared<PrimaryExprId>					\

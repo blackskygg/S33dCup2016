@@ -24,15 +24,15 @@ class Scope {
 class Expression{
  public:
   typedef enum{
-    COMMA,
-    ASSIGNMENT,
-    EQUALITY,
-    RELATIONAL,
-    ADDITIVE,
-    MULT,
-    UNARY,
-    POSTFIX,
-    PRIMARY,
+    COMMA = 0,
+    ASSIGNMENT = 1,
+    EQUALITY = 2,
+    RELATIONAL = 3,
+    ADDITIVE = 4,
+    MULT = 5,
+    UNARY = 6,
+    POSTFIX = 7,
+    PRIMARY = 8,
   } ExprType;
 
   virtual int eval(Scope &scope) = 0;
@@ -108,12 +108,50 @@ class SelectStat: public Statement {
   int execute();
 
   std::shared_ptr<Expression> expr;
-  std::shared_ptr<Statement> expr1;
-  std::shared_ptr<Statement> expr2;
+  std::shared_ptr<Statement> stat1;
+  std::shared_ptr<Statement> stat2;
 };
 
-class ExpressionStat : public Statement {
+class ForStat: public Statement {
  public:
+  ForStat(std::shared_ptr<Scope> scope) : Statement(scope){};
+  int execute();
+
+  std::shared_ptr<Expression> expr[3];
+  std::shared_ptr<Statement> stat;
+};
+
+class WhileStat: public Statement {
+ public:
+  WhileStat(std::shared_ptr<Scope> scope) : Statement(scope){};
+  int execute();
+
+  std::shared_ptr<Expression> expr;
+  std::shared_ptr<Statement> stat;
+};
+
+class DoStat: public Statement {
+ public:
+  DoStat(std::shared_ptr<Scope> scope) : Statement(scope){};
+  int execute();
+
+  std::shared_ptr<Expression> expr;
+  std::shared_ptr<Statement> stat;
+};
+
+class PrintStat: public Statement {
+ public:
+  PrintStat(std::shared_ptr<Scope> scope) : Statement(scope){};
+  int execute();
+
+  std::shared_ptr<Expression> expr;
+};
+
+class ExprStat : public Statement {
+ public:
+ ExprStat(std::shared_ptr<Scope> scope) : Statement(scope){};
+  int execute();
+  
   std::shared_ptr<Expression> expr;
 };
 
@@ -152,6 +190,26 @@ class Parser {
 						  std::string::const_iterator str_end,
 						  size_t origin,
 						  SelectStat& stat);
+  std::string::const_iterator parse_for_stat(std::string::const_iterator str_begin,
+						  std::string::const_iterator str_end,
+						  size_t origin,
+						  ForStat& stat);
+  std::string::const_iterator parse_while_stat(std::string::const_iterator str_begin,
+						  std::string::const_iterator str_end,
+						  size_t origin,
+						  WhileStat& stat);
+  std::string::const_iterator parse_do_stat(std::string::const_iterator str_begin,
+						  std::string::const_iterator str_end,
+						  size_t origin,
+						  DoStat& stat);
+  std::string::const_iterator parse_print_stat(std::string::const_iterator str_begin,
+						 std::string::const_iterator str_end,
+						 size_t origin,
+						 PrintStat& stat);
+  std::string::const_iterator parse_expr_stat(std::string::const_iterator str_begin,
+						std::string::const_iterator str_end,
+						size_t origin,
+						ExprStat& stat); 
   std::string::const_iterator parse_stat(std::string::const_iterator begin,
 					 std::string::const_iterator end,
 					 size_t origin,

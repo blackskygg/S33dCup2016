@@ -97,7 +97,7 @@ Parser::Parser(vector <Token> &tokens): tokens(tokens)
   expr_tpls.push_back(make_pair(Expression::MULT, expr_regex("(.+?)[\\*/](.+)")));
   expr_tpls.push_back(make_pair(Expression::UNARY, expr_regex("[\\+-](.+)")));
   expr_tpls.push_back(make_pair(Expression::POSTFIX, expr_regex("(.+?)[\\^v]")));
-  expr_tpls.push_back(make_pair(Expression::PRIMARY, expr_regex("[na]")));
+  expr_tpls.push_back(make_pair(Expression::PRIMARY, expr_regex("[nas]")));
 }
 
 void Parser::encode_tokens(std::vector <Token>& tokens, string &s)
