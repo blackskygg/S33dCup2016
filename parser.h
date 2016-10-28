@@ -104,10 +104,12 @@ class CompoundStat: public Statement {
 
 class SelectStat: public Statement {
  public:
- CompoundStat(std::shared_ptr<Scope> scope) : Statement(scope){};
+  SelectStat(std::shared_ptr<Scope> scope) : Statement(scope){};
   int execute();
 
-  std::vector< std::shared_ptr<Statement> > stat_list;
+  std::shared_ptr<Expression> expr;
+  std::shared_ptr<Statement> expr1;
+  std::shared_ptr<Statement> expr2;
 };
 
 class ExpressionStat : public Statement {
@@ -133,7 +135,7 @@ class Parser {
 			 std::string::const_iterator end,
 			 size_t origin,
 			 AssignmentExpr& expr);
-  void parse_stats(std::string::const_iterator begin,
+  void parse_stat_list(std::string::const_iterator begin,
 		   std::string::const_iterator end,
 		   size_t origin,
 		   std::vector< std::shared_ptr<Statement> >& stats,
@@ -146,6 +148,10 @@ class Parser {
 					      std::string::const_iterator end,
 					      size_t origin,
 					      DeclStat& stat);
+  std::string::const_iterator parse_select_stat(std::string::const_iterator str_begin,
+						  std::string::const_iterator str_end,
+						  size_t origin,
+						  SelectStat& stat);
   std::string::const_iterator parse_stat(std::string::const_iterator begin,
 					 std::string::const_iterator end,
 					 size_t origin,
