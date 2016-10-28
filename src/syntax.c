@@ -151,7 +151,7 @@ struct syntax_node *init_decl(size_t *idx)
 
     if (check(ASSIGN)) {
         consume();
-        node->children->sibling = expression(idx);
+        node->children->sibling = assignment_exp(idx);
     } else {
         node->children->sibling = NULL;
     }
@@ -255,41 +255,41 @@ struct syntax_node *argument_list(size_t *idx)
     return NULL;
 }
 
-struct syntax_node *assignment_exp(size_t *idx);
-struct syntax_node *equality_exp(size_t *idx);
-struct syntax_node *relational_exp(size_t *idx);
-struct syntax_node *additive_exp(size_t *idx);
-struct syntax_node *mult_exp(size_t *idx);
-struct syntax_node *unary_exp(size_t *idx);
-struct syntax_node *postfix_exp(size_t *idx);
-struct syntax_node *primary_exp(size_t *idx);
-
 struct syntax_node *expression(size_t *idx)
 {
-    return equality_exp(idx);
+    struct syntax_node *node = malloc_node();
+    node->type = SYN_EXPRESSION;
+    node->token_idx = *idx;
+
+    node->children = assignment_exp(idx);
+
+    struct syntax_node *iter = node->children;
+    while (iter && check(COMMA)) {
+        consume();
+        iter->sibling = assignment_exp(idx);
+        iter = iter->sibling;
+    }
+
+    node->sibling = NULL;
+
+    return node;
 }
 
 struct syntax_node *assignment_exp(size_t *idx)
 {
-    /*
+    if (tokens[*idx].type != ID || tokens[*idx + 1].type != ASSIGN)
+        return equality_exp(idx);
+
     struct syntax_node *node = malloc_node();
     node->type = SYN_ASSIGNMENT_EXP;
     node->children = primary_exp(idx);
     node->token_idx = *idx;
 
-    if (check(ASSIGN)) {
-        consume();
+    consume();
 
-        node->sibling = assignment_exp(idx);
+    node->sibling = assignment_exp(idx);
 
-        return node;
-    } else {
-        struct syntax_node * result = node->children;
-        free(node);
-        return result;
-    }
-    */
-    return NULL;
+    return node;
 }
 
 struct syntax_node *equality_exp(size_t *idx)
@@ -410,6 +410,11 @@ struct syntax_node *postfix_exp(size_t *idx)
     node->type = SYN_POSTFIX_EXP;
     node->token_idx = *idx;
     node->children = primary_exp(idx);
+
+    if (node->children == NULL) {
+        free(node);
+        return NULL;
+    }
 
     struct syntax_node *iter = node->children;
     while (iter && (check(INC) || check(DEC))) {

@@ -60,6 +60,13 @@ struct syntax_node *jump_stat(size_t *idx);
 struct syntax_node *print_stat(size_t *idx);
 struct syntax_node *argument_list(size_t *idx);
 struct syntax_node *expression(size_t *idx);
-
+struct syntax_node *assignment_exp(size_t *idx);
+struct syntax_node *equality_exp(size_t *idx);
+struct syntax_node *relational_exp(size_t *idx);
+struct syntax_node *additive_exp(size_t *idx);
+struct syntax_node *mult_exp(size_t *idx);
+struct syntax_node *unary_exp(size_t *idx);
+struct syntax_node *postfix_exp(size_t *idx);
+struct syntax_node *primary_exp(size_t *idx);
 
 #endif
