@@ -1,7 +1,7 @@
 CC=clang
 CFLAGS=-Wall -g
 
-all: main token syntax
+all: main.o token.o syntax.o
 	$(CC) $(CFLAGS) -o SeedCup2016.exe main.o token.o syntax.o
 
 main: main.c
