@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
   vector<shared_ptr<Statement> > stats;
   parser.parse(stats);
 
-  delete buf;
+  delete[] buf;
   
   return 0;
 }
