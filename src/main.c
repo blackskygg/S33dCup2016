@@ -49,6 +49,7 @@ int main(int argc, char const *argv[])
             putchar(tokens[i].literal[j]);
         printf("\"\t%ld\n", tokens[i].line);
     }
+    tokens[token_count].type = END;
     printf("token_count = %ld\n", token_count);
 
     // MALLOC root

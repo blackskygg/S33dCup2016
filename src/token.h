@@ -37,6 +37,7 @@ enum token_type {
     MUL,        // *
     DIV,        // /
     ID,         // variable_a
+    END,
 };
 
 struct token {
