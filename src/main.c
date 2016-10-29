@@ -3,8 +3,11 @@
 
 #include "token.h"
 #include "syntax.h"
+#include "evaluate.h"
 
 struct token tokens[65536];
+
+extern struct scope_record *scope;
 
 char *read_code(const char *fname)
 {
@@ -63,6 +66,10 @@ int main(int argc, char const *argv[])
 
     // DEBUG display
     print_ast(root, 0);
+
+    scope = enter_scope();
+    eval_stat_list(root);
+    leave_scope();
 
     // FREE root
     destory_ast(root);
