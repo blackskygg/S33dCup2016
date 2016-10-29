@@ -55,7 +55,6 @@ struct syntax_node *do_while_stat(size_t *idx);
 struct syntax_node *for_stat(size_t *idx);
 struct syntax_node *jump_stat(size_t *idx);
 struct syntax_node *print_stat(size_t *idx);
-struct syntax_node *argument_list(size_t *idx);
 struct syntax_node *expression(size_t *idx);
 struct syntax_node *assignment_exp(size_t *idx);
 struct syntax_node *equality_exp(size_t *idx);

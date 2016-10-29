@@ -230,11 +230,6 @@ struct syntax_node *print_stat(size_t *idx)
     return node;
 }
 
-struct syntax_node *argument_list(size_t *idx)
-{
-    return NULL;
-}
-
 struct syntax_node *expression(size_t *idx)
 {
     struct syntax_node *head = assignment_exp(idx);
