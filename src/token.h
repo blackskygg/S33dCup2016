@@ -9,7 +9,7 @@ enum token_type {
     COMMENT,    // /* asdf */ | // asdf
     INT_CONST,  // 123
     STRING,     // "hello"
-    DECL,   // int
+    DECL,       // int
     IF,         // if
     ELSE,       // else
     WHILE,      // while

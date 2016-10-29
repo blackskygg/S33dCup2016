@@ -301,7 +301,6 @@ struct syntax_node *for_stat(size_t *idx)
         bootstrap->children = init_decl_list(idx);
     } else {
         bootstrap->children = expression(idx);
-
     }
 
     consume(); // ;

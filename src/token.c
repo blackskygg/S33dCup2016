@@ -59,6 +59,7 @@ struct token token_scan(char *code)
     enum token_type max_match_type = (enum token_type)0;
 
     regmatch_t matched;
+
     for (size_t i = 0; i < TOKEN_TYPE_NUM; i++) {
         int match_status = regexec(token_re + i, code, 1, &matched, 0);
         if (matched.rm_so == 0 && match_status != REG_NOMATCH) {
@@ -69,7 +70,7 @@ struct token token_scan(char *code)
         }
     }
 
-    regexec(token_re + (size_t) max_match_type, code, 1, &matched, 0);
+    regexec(token_re + (size_t)max_match_type, code, 1, &matched, 0);
     token.type = max_match_type;
     token.literal = code;
     token.length = (size_t)matched.rm_eo;

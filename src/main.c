@@ -51,7 +51,7 @@ int main(int argc, char const *argv[])
     }
     tokens[token_count].type = END;
 
-    /* DEBUG display
+    // DEBUG display
     for (size_t i = 0; i < token_count; i++) {
         printf("token: %d\t\"", tokens[i].type);
         for (size_t j = 0; j < tokens[i].length; j++)
@@ -59,13 +59,12 @@ int main(int argc, char const *argv[])
         printf("\"\t%ld\n", tokens[i].line);
     }
     printf("token_count = %ld\n", token_count);
-    */
 
     // MALLOC root
     struct syntax_node *root = generate_ast();
 
     // DEBUG display
-    // print_ast(root, 0);
+    print_ast(root, 0);
 
     scope = enter_scope();
     eval_stat_list(root);

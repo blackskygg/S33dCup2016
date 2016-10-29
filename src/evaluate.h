@@ -4,11 +4,11 @@
 #include "syntax.h"
 
 struct scope_record {
-    int is_scope_flag;
-    char *key;
-    size_t len;
-    int val;
-    struct scope_record *prev;
+    int						is_scope_flag;
+    char *					key;
+    size_t					len;
+    int						val;
+    struct scope_record *	prev;
 };
 
 struct scope_record *enter_scope();
