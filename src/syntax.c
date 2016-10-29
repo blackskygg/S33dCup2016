@@ -407,6 +407,15 @@ struct syntax_node *primary_exp(size_t *idx)
 
         node->children = NULL;
         node->sibling = NULL;
+    } else if (check(STRING)) {
+        node = malloc_node();
+        node->type = SYN_STRING;
+        node->token_idx = *idx;
+
+        consume();
+
+        node->children = NULL;
+        node->sibling = NULL;
     }
     return node;
 }

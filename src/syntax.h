@@ -24,8 +24,9 @@ enum syntax_type {
     SYN_MULT_EXP,
     SYN_UNARY_EXP,
     SYN_POSTFIX_EXP,
-    SYN_INT_CONST,
     SYN_ID,
+    SYN_INT_CONST,
+    SYN_STRING,
     SYN_POS,
     SYN_NEG
 };
