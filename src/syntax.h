@@ -1,7 +1,6 @@
 #ifndef SYNTAX_H
 #define SYNTAX_H
 
-#include <regex.h>
 #include "token.h"
 
 enum syntax_type {

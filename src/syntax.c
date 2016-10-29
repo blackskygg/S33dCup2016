@@ -298,9 +298,9 @@ struct syntax_node *for_stat(size_t *idx)
     bootstrap->token_idx = *idx;
     if (check(DECL)) {
         consume();
-        bootstrap->children =init_decl_list(idx);
+        bootstrap->children = init_decl_list(idx);
     } else {
-        bootstrap->children =expression(idx);
+        bootstrap->children = expression(idx);
 
     }
 
