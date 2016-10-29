@@ -288,7 +288,7 @@ Parser::Parser(vector <Token> &tokens): tokens(tokens)
   expr_tpls.push_back(make_pair(Expression::RELATIONAL, expr_regex("(.+)([gl><])(.+)")));
   expr_tpls.push_back(make_pair(Expression::ADDITIVE, expr_regex("(.*[\\^vnas])([\\+-])(.+)")));
   expr_tpls.push_back(make_pair(Expression::MULT, expr_regex("(.+)([\\*/])(.+)")));
-  expr_tpls.push_back(make_pair(Expression::UNARY, expr_regex("[\\+-](.+)")));
+  expr_tpls.push_back(make_pair(Expression::UNARY, expr_regex("([\\+-])(.+)")));
   expr_tpls.push_back(make_pair(Expression::POSTFIX, expr_regex("(.+)([\\^v])")));
   expr_tpls.push_back(make_pair(Expression::PRIMARY, expr_regex("([nas])")));
 }

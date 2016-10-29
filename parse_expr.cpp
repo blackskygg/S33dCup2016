@@ -30,8 +30,8 @@ void Parser::parse_expr(string::const_iterator str_begin,
 
   //  cout<< "op: " << var->op <<endl;	
 
-  //  cout << "expr: " << string(str_begin, str_end) << endl;
-  //  cout << "expr_type: " << type << endl;
+  cout << "expr: " << string(str_begin, str_end) << endl;
+  cout << "expr_type: " << type << endl;
   switch (type) {
   case Expression::COMMA:
     {

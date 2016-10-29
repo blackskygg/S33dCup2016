@@ -249,8 +249,8 @@ string::const_iterator Parser::parse_stat(string::const_iterator str_begin,
     stat_end = PARSER_NAME(v)(str_begin, str_end, origin, *v##_ptr);	\
     stat_ptr = dynamic_pointer_cast<Statement>(v##_ptr);  }
 
-  cout << string(str_begin, str_end) <<endl;
-  cout << tokens[origin].code <<endl;
+  // cout << string(str_begin, str_end) <<endl;
+  // cout << tokens[origin].code <<endl;
   //  cout << *str_begin << " linum: "<< tokens[origin].linum <<endl;
   switch (*str_begin) {
   case 'i': PARSE_STAT(DeclStat, decl);
