@@ -160,6 +160,7 @@ struct syntax_node *exp_stat(size_t *idx)
 struct syntax_node *compound_stat(size_t *idx)
 {
     struct syntax_node *node = malloc_node();
+
     node->type = SYN_COMPOUND_STAT;
     node->token_idx = *idx;
 
@@ -177,11 +178,12 @@ struct syntax_node *compound_stat(size_t *idx)
 struct syntax_node *selection_stat(size_t *idx)
 {
     struct syntax_node *node = malloc_node();
+
     node->type = SYN_SELECTION_STAT;
     node->token_idx = *idx;
 
-    consume(); // if
-    consume(); // (
+    consume();  // if
+    consume();  // (
 
     node->children = malloc_node();
     struct syntax_node *cond = node->children;
@@ -218,11 +220,12 @@ struct syntax_node *selection_stat(size_t *idx)
 struct syntax_node *while_stat(size_t *idx)
 {
     struct syntax_node *node = malloc_node();
+
     node->type = SYN_WHILE_STAT;
     node->token_idx = *idx;
 
-    consume(); // while
-    consume(); // (
+    consume();  // while
+    consume();  // (
 
     node->children = malloc_node();
     struct syntax_node *cond = node->children;
@@ -231,7 +234,7 @@ struct syntax_node *while_stat(size_t *idx)
     cond->children = expression(idx);
 
     consume(); // )
-    
+
     cond->sibling = malloc_node();
     struct syntax_node *body = cond->sibling;
     body->type = SYN_BODY;
@@ -247,6 +250,7 @@ struct syntax_node *while_stat(size_t *idx)
 struct syntax_node *do_while_stat(size_t *idx)
 {
     struct syntax_node *node = malloc_node();
+
     node->type = SYN_DO_WHILE_STAT;
     node->token_idx = *idx;
 
@@ -258,10 +262,10 @@ struct syntax_node *do_while_stat(size_t *idx)
     body->token_idx = *idx;
     body->children = stat(idx);
 
-    consume(); // while
+    consume();  // while
 
-    consume(); // (
-    
+    consume();  // (
+
     body->sibling = malloc_node();
     struct syntax_node *cond = body->sibling;
     cond->type = SYN_COND;
@@ -281,11 +285,12 @@ struct syntax_node *do_while_stat(size_t *idx)
 struct syntax_node *for_stat(size_t *idx)
 {
     struct syntax_node *node = malloc_node();
+
     node->type = SYN_FOR_STAT;
     node->token_idx = *idx;
 
-    consume(); // for
-    consume(); // (
+    consume();  // for
+    consume();  // (
 
     node->children = malloc_node();
     struct syntax_node *bootstrap = node->children;
@@ -294,7 +299,7 @@ struct syntax_node *for_stat(size_t *idx)
     bootstrap->children = check(DECL) ? init_decl_list(idx) : expression(idx);
 
     consume(); // ;
-    
+
     bootstrap->sibling = malloc_node();
     struct syntax_node *cond = bootstrap->sibling;
     cond->type = SYN_COND;
@@ -327,6 +332,7 @@ struct syntax_node *for_stat(size_t *idx)
 struct syntax_node *jump_stat(size_t *idx)
 {
     struct syntax_node *node = malloc_node();
+
     node->type = SYN_JUMP_STAT;
     node->token_idx = *idx;
 
@@ -344,16 +350,17 @@ struct syntax_node *jump_stat(size_t *idx)
 struct syntax_node *print_stat(size_t *idx)
 {
     struct syntax_node *node = malloc_node();
+
     node->type = SYN_PRINT_STAT;
     node->token_idx = *idx;
 
-    consume(); // printf
-    consume(); // (
+    consume();  // printf
+    consume();  // (
 
     node->children = expression(idx);
 
-    consume(); // )
-    consume(); // ;
+    consume();  // )
+    consume();  // ;
 
     node->sibling = NULL;
 
@@ -488,6 +495,7 @@ struct syntax_node *unary_exp(size_t *idx)
     struct syntax_node *root;
 
     struct syntax_node **iter = &root;
+
     while (check(ADD) || check(SUB)) {
         *iter = malloc_node();
         (*iter)->type = SYN_UNARY_EXP;
@@ -508,6 +516,7 @@ struct syntax_node *unary_exp(size_t *idx)
 struct syntax_node *postfix_exp(size_t *idx)
 {
     struct syntax_node *root = primary_exp(idx);
+
     while (root && (check(INC) || check(DEC))) {
         struct syntax_node *new_root = malloc_node();
         new_root->type = SYN_POSTFIX_EXP;
