@@ -168,24 +168,21 @@ void SelectStat::execute(Result& result)
 
 void ForStat::execute(Result& result)
 {
-  result.add_line(linum);
-
   if (has_decl)
     decl.execute(result);
   else
     expr[1]->eval(*scope);
 
-  for (; expr[2]->eval(*scope); expr[3]->eval(*scope)) {
-    result.add_line(linum);
+  for (result.add_line(linum);
+       result.add_line(linum), expr[2]->eval(*scope);
+       expr[3]->eval(*scope)) {
     stat->execute(result);
   }
 }
 
 void WhileStat::execute(Result& result)
 {
-  result.add_line(linum);
-  while(expr->eval(*scope)) {
-    result.add_line(linum);
+  while(result.add_line(linum), expr->eval(*scope)) {
     stat->execute(result);
   }
 }

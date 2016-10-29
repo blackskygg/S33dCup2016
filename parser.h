@@ -255,6 +255,14 @@ class ExprStat : public Statement {
 #define stat_regex(s) regex(s)
 #define expr_regex(s) regex(s)
 
+#define PARSER_NAME(fn)       parse_##fn##_stat
+#define STAT_PARSER_PROTO(T, fn)				\
+  std::string::const_iterator					\
+    PARSER_NAME(fn)(std::string::const_iterator str_begin,	\
+		      std::string::const_iterator str_end,	\
+		      size_t origin,				\
+		      T& stat)
+
 class Parser {
  public:
   Parser(std::vector <Token> &tokens);
@@ -265,64 +273,44 @@ class Parser {
 		  std::string::const_iterator end,
 		  size_t origin,
 		  std::shared_ptr<Expression>& expr);
+
   void parse_init_decl(std::string::const_iterator begin,
 			 std::string::const_iterator end,
 			 size_t origin,
 			 InitDecl& decl);
-  void parse_stat_list(std::string::const_iterator begin,
-		   std::string::const_iterator end,
-		   size_t origin,
-		   std::vector< std::shared_ptr<Statement> >& stats,
-		   std::shared_ptr<Scope> scope);
-  std::string::const_iterator parse_comp_stat(std::string::const_iterator str_begin,
-					      std::string::const_iterator str_end,
-					      size_t origin,
-					      CompoundStat& stat);
-  std::string::const_iterator parse_decl_stat(std::string::const_iterator begin,
-					      std::string::const_iterator end,
-					      size_t origin,
-					      DeclStat& stat);
-  std::string::const_iterator parse_select_stat(std::string::const_iterator str_begin,
-						  std::string::const_iterator str_end,
-						  size_t origin,
-						  SelectStat& stat);
-  std::string::const_iterator parse_for_stat(std::string::const_iterator str_begin,
-						  std::string::const_iterator str_end,
-						  size_t origin,
-						  ForStat& stat);
-  std::string::const_iterator parse_while_stat(std::string::const_iterator str_begin,
-						  std::string::const_iterator str_end,
-						  size_t origin,
-						  WhileStat& stat);
-  std::string::const_iterator parse_break_stat(std::string::const_iterator str_begin,
-						  std::string::const_iterator str_end,
-						  size_t origin,
-						  BreakStat& stat);
-  std::string::const_iterator parse_do_stat(std::string::const_iterator str_begin,
-						  std::string::const_iterator str_end,
-						  size_t origin,
-						  DoStat& stat);
-  std::string::const_iterator parse_print_stat(std::string::const_iterator str_begin,
-						 std::string::const_iterator str_end,
-						 size_t origin,
-						 PrintStat& stat);
-  std::string::const_iterator parse_expr_stat(std::string::const_iterator str_begin,
-						std::string::const_iterator str_end,
-						size_t origin,
-						ExprStat& stat); 
-  std::string::const_iterator parse_stat(std::string::const_iterator begin,
-					 std::string::const_iterator end,
-					 size_t origin,
-					 std::shared_ptr<Statement>& stats,
-					 std::shared_ptr<Scope> scope);
+
+  STAT_PARSER_PROTO(CompoundStat, comp);
+  STAT_PARSER_PROTO(DeclStat, decl);
+  STAT_PARSER_PROTO(SelectStat, select);
+  STAT_PARSER_PROTO(ForStat, for);
+  STAT_PARSER_PROTO(WhileStat, while);
+  STAT_PARSER_PROTO(BreakStat, break);
+  STAT_PARSER_PROTO(DoStat, do);
+  STAT_PARSER_PROTO(PrintStat, print);
+  STAT_PARSER_PROTO(ExprStat, expr);
+
+  std::string::const_iterator
+    parse_stat(std::string::const_iterator begin,
+	       std::string::const_iterator end,
+	       size_t origin,
+	       std::shared_ptr<Statement>& stats,
+	       std::shared_ptr<Scope> scope);
+
+  std::string::const_iterator
+    parse_stat_list(std::string::const_iterator begin,
+		    std::string::const_iterator end,
+		    size_t origin,
+		    std::vector< std::shared_ptr<Statement> >& stats,
+		    std::shared_ptr<Scope> scope);
   
   void encode_tokens(std::vector <Token>& tokens, std::string &s);
+
 
   std::vector< std::pair<Statement::StatType, std::regex> > stat_tpls;
   std::vector< std::pair<Expression::ExprType, std::regex> > expr_tpls;
   char code_map[256];
   std::vector <Token> &tokens;
-};
 
+};
 
 #endif

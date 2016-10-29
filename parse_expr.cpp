@@ -25,9 +25,10 @@ void Parser::parse_expr(string::const_iterator str_begin,
   parse_expr(m[(n)].first, m[(n)].second, POS(n), expr);
 #define PARSE_BIN(var)			\
   var->op = tokens[POS(2)].code;	\
-  cout<< "op: " << var->op <<endl;	\
   PARSE_EXPR(1, var->expr1);		\
   PARSE_EXPR(3, var->expr2);		
+
+  //  cout<< "op: " << var->op <<endl;	
 
   //  cout << "expr: " << string(str_begin, str_end) << endl;
   //  cout << "expr_type: " << type << endl;
