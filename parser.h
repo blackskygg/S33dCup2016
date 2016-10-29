@@ -246,7 +246,8 @@ class ExprStat : public Statement {
  public:
  ExprStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum) {};
   void execute(Result &result);
-  
+
+  bool is_empty;
   std::shared_ptr<Expression> expr;
 };
 

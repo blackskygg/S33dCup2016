@@ -245,6 +245,9 @@ string::const_iterator Parser::parse_expr_stat(string::const_iterator str_begin,
   size_t pos;
 
   //ExprStat could be empty
+  if (';' == *str_begin)
+    return str_begin + 1;
+  
   regex_search(str_begin, str_end, m, regex("(.*?);"), regex_constants::match_continuous);
   pos = m[1].first - str_origin + origin;
   parse_expr(m[1].first, m[1].second, pos, stat.expr);

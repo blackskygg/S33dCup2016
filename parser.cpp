@@ -211,8 +211,10 @@ void PrintStat::execute(Result& result)
 
 void ExprStat::execute(Result& result)
 {
-  result.add_line(linum);
-  expr->eval(*scope);
+  if (!is_empty) {
+    result.add_line(linum);
+    expr->eval(*scope);
+  }
 }
 
 void CompoundStat::execute(Result& result)
