@@ -4,8 +4,6 @@
 
 using namespace std;
 
-static bool break_flag = false;
-
 int Scope::get_identifier(const string& name)
 {
   unordered_map<string, int>::iterator it;
@@ -122,13 +120,11 @@ int PostfixExpr:: eval(Scope& scope)
   string& id = dynamic_pointer_cast<PrimaryExprId>(expr)->id;
   if ("++" == op) {
     scope.mod_identifier(id, val + 1);
-    return val + 1;
   } else if("--" == op) {
     scope.mod_identifier(id, val - 1);
-    return val - 1;
-  } else {
-    return -1;
   }
+
+  return val;
 }
 
 int PrimaryExprConst:: eval(Scope& scope)
@@ -191,8 +187,7 @@ void ForStat::execute(Result& result, Scope& scope)
 
   while (result.add_line(linum), expr[1]->eval(new_scp)) {
     stat->execute(result, new_scp);
-    if (break_flag) {
-      break_flag = false;
+    if (new_scp.break_flag) {
       break;
     }
     result.add_line(linum), expr[2]->eval(new_scp);
@@ -203,8 +198,8 @@ void WhileStat::execute(Result& result, Scope& scope)
 {
   while(result.add_line(linum), expr->eval(scope)) {
     stat->execute(result, scope);
-    if (break_flag) {
-      break_flag = false;
+    if (scope.break_flag) {
+      scope.break_flag = false;
       break;
     }
   }
@@ -214,8 +209,8 @@ void DoStat::execute(Result& result, Scope& scope)
 {
   do {
     stat->execute(result, scope);
-    if (break_flag) {
-      break_flag = false;
+    if (scope.break_flag) {
+      scope.break_flag = false;
       break;
     }
   } while(result.add_line(linum), expr->eval(scope));
@@ -223,7 +218,7 @@ void DoStat::execute(Result& result, Scope& scope)
 
 void BreakStat::execute(Result& result, Scope& scope)
 {
-  break_flag = true;
+  scope.break_flag = true;
   result.add_line(linum);
 }
 
@@ -246,8 +241,10 @@ void CompoundStat::execute(Result& result, Scope& scope)
   Scope new_scp(&scope);
   for (auto stat: stat_list) {
     stat->execute(result, new_scp);
-    if (break_flag)
+    if (new_scp.break_flag) {
+      scope.break_flag = true;
       break;
+    }
   }
 }
 

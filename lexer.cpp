@@ -49,8 +49,8 @@ Lexer::Lexer()
   tokenTpls.push_back(make_pair(Token::COLON, token_regex(":")));
   tokenTpls.push_back(make_pair(Token::COMMA, token_regex(",")));
   tokenTpls.push_back(make_pair(Token::COMMENT,				\
-				token_regex("(/\\*(.|\r\n)*?\\*/)|(//[^\r\n]*)")));
-  tokenTpls.push_back(make_pair(Token::CRLF, token_regex("\r\n")));
+				token_regex("(/\\*(.|\n)*?\\*/)|(//[^\n]*)")));
+  tokenTpls.push_back(make_pair(Token::CRLF, token_regex("\n")));
   tokenTpls.push_back(make_pair(Token::STRING_LITERAL,			\
 				token_regex("\"(\\\\.|[^\"])*\"")));
 }
@@ -59,7 +59,7 @@ int Lexer::count_crlf(string s)
 {
   size_t pos = 0;
   int result = 0;
-  while (string::npos != (pos = s.find("\r\n", pos))) {
+  while (string::npos != (pos = s.find("\n", pos))) {
     result++;
     pos+=2;
   }

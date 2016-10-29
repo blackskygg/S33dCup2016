@@ -21,14 +21,15 @@ class Identifier {
 
 class Scope {
  public:
- Scope() : parent(nullptr), is_top(true){};
-  Scope(Scope* parent) : parent(parent), is_top(false) {};
+ Scope() : parent(nullptr) {};
+  Scope(Scope* parent) : parent(parent) {};
   int get_identifier(const std::string& name);
   void set_identifier(const std::string& name, int val);
   void mod_identifier(const std::string& name, int val);
 
+  bool break_flag = false;
+
  private:
-  bool is_top = true;
   Scope* parent = nullptr;
   std::unordered_map<std::string, int> vars;
 };
@@ -287,7 +288,7 @@ class SelectStat: public Statement {
     cout<<endl<<"IfEnd"<<endl;
   };
 
-  bool has_else;
+  bool has_else = false;
   std::shared_ptr<Expression> expr;
   std::shared_ptr<Statement> stat1;
   std::shared_ptr<Statement> stat2;

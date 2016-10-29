@@ -99,20 +99,20 @@ void Parser::parse_expr(string::const_iterator str_begin,
 	(atoi(tokens[POS(1)].code.c_str()));
       expr = dynamic_pointer_cast<Expression>(prim_ptr);
     } else  if (m[0].str() == "s") {
-      shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst>(0);
+      shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst>(1);
       expr = dynamic_pointer_cast<Expression>(prim_ptr);
     } else if (m[1].str() == "a"){
       shared_ptr<PrimaryExprId> prim_ptr = make_shared<PrimaryExprId>	\
 	(tokens[POS(1)].code);
       expr = dynamic_pointer_cast<Expression>(prim_ptr);
     } else {
-      shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst>(0);
+      shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst>(1);
       expr = dynamic_pointer_cast<Expression>(prim_ptr);
     }
     break;
   default:
     {
-      shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst>(0);
+      shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst>(1);
       expr = dynamic_pointer_cast<Expression>(prim_ptr);
       cout <<" Expression reached default "<<endl;
     }
