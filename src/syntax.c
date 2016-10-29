@@ -176,7 +176,43 @@ struct syntax_node *compound_stat(size_t *idx)
 
 struct syntax_node *selection_stat(size_t *idx)
 {
-    return NULL;
+    struct syntax_node *node = malloc_node();
+    node->type = SYN_SELECTION_STAT;
+    node->token_idx = *idx;
+
+    consume(); // if
+    consume(); // (
+
+    node->children = malloc_node();
+    struct syntax_node *cond = node->children;
+    cond->type = SYN_SELECTION_COND;
+    cond->token_idx = *idx;
+    cond->children = expression(idx);
+
+    consume(); // )
+
+    cond->sibling = malloc_node();
+    struct syntax_node *body = cond->sibling;
+    body->type = SYN_SELECTION_BODY;
+    body->token_idx = *idx;
+    body->children = stat(idx);
+
+    if (check(ELSE)) {
+        consume(); // else
+
+        body->sibling = malloc_node();
+        struct syntax_node *else_body = body->sibling;
+        else_body->type = SYN_SELECTION_ELSE;
+        else_body->token_idx = *idx;
+        else_body->children = stat(idx);
+        else_body->sibling = NULL;
+    } else {
+        body->sibling = NULL;
+    }
+
+    node->sibling = NULL;
+
+    return node;
 }
 
 struct syntax_node *while_stat(size_t *idx)
