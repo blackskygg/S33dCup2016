@@ -39,7 +39,7 @@ STAT_PARSER(DeclStat, decl)
 {
 
   smatch m;
-  bool end;
+  bool end = false;
   size_t len;
   InitDecl decl_expr;
 
@@ -81,17 +81,16 @@ STAT_PARSER(DeclStat, decl)
 }
 
 string::const_iterator Parser::parse_stat_list(string::const_iterator str_begin,
-			     string::const_iterator str_end,
-			     size_t origin,
-			     vector< shared_ptr<Statement> >& stats,
-			     shared_ptr<Scope> scope)
+					       string::const_iterator str_end,
+					       size_t origin,
+					       vector< shared_ptr<Statement> >& stats)
 {
   shared_ptr<Statement> stat_ptr;
 
   MK_ORIGIN(str_begin);
 
   while ((str_begin != str_end) && (*str_begin != '}')) {
-    str_begin = parse_stat(str_begin, str_end, POS(str_begin), stat_ptr, scope);
+    str_begin = parse_stat(str_begin, str_end, POS(str_begin), stat_ptr);
     stats.push_back(stat_ptr);
   }
 
@@ -104,8 +103,7 @@ STAT_PARSER(CompoundStat, comp)
   string::const_iterator comp_end;
 
   ++str_begin;
-  str_begin = parse_stat_list(str_begin, str_end, origin + 1,
-		  stat.stat_list, stat.scope);
+  str_begin = parse_stat_list(str_begin, str_end, origin + 1, stat.stat_list);
 
   return str_begin + 1;
 }
@@ -139,12 +137,13 @@ STAT_PARSER(SelectStat, select)
 
   // {}
   str_begin = m[0].second;
-  str_begin = parse_stat(str_begin, str_end, POS(str_begin), stat.stat1, stat.scope);
+  str_begin = parse_stat(str_begin, str_end, POS(str_begin), stat.stat1);
 
   // else {}
   if (str_begin != str_end && *str_begin == '@')  {
+    stat.has_else = true;
     str_begin++;
-    str_begin = parse_stat(str_begin, str_end, POS(str_begin), stat.stat2, stat.scope);
+    str_begin = parse_stat(str_begin, str_end, POS(str_begin), stat.stat2);
   }
 
   return str_begin;
@@ -175,7 +174,7 @@ STAT_PARSER(ForStat, for)
     parse_expr(m[1].first, m[1].second, POS(m[1].first), stat.expr[i]);
   }
 
-  return parse_stat(str_begin, str_end, POS(str_begin), stat.stat, stat.scope);
+  return parse_stat(str_begin, str_end, POS(str_begin), stat.stat);
 }
 
 STAT_PARSER(WhileStat, while)
@@ -189,7 +188,7 @@ STAT_PARSER(WhileStat, while)
   parse_expr(m[1].first, m[1].second, POS(m[1].first), stat.expr);
 
   str_begin = m[0].second;
-  return parse_stat(str_begin, str_end, POS(str_begin), stat.stat, stat.scope);
+  return parse_stat(str_begin, str_end, POS(str_begin), stat.stat);
 }
 
 STAT_PARSER(BreakStat, break)
@@ -204,11 +203,12 @@ STAT_PARSER(DoStat, do)
   MK_ORIGIN(str_begin);
   
   ++str_begin;
-  str_begin = parse_stat(str_begin, str_end, POS(str_begin), stat.stat, stat.scope);
+  str_begin = parse_stat(str_begin, str_end, POS(str_begin), stat.stat);
 
   str_begin += 2;
   regex_search(str_begin, str_end, m, regex("(.+?)\\);"), regex_constants::match_continuous);
   parse_expr(m[1].first, m[1].second, POS(m[1].first), stat.expr);
+  stat.linum = tokens[POS(m[1].first)].linum;
 
   return m[0].second;  
 }
@@ -236,8 +236,7 @@ STAT_PARSER(ExprStat, expr)
 string::const_iterator Parser::parse_stat(string::const_iterator str_begin,
 					  string::const_iterator str_end,
 					  size_t origin,
-					  shared_ptr<Statement>& stat_ptr,
-					  std::shared_ptr<Scope> scope)
+					  shared_ptr<Statement>& stat_ptr)
 {
   if (str_begin == str_end)
     return str_begin;
@@ -245,8 +244,8 @@ string::const_iterator Parser::parse_stat(string::const_iterator str_begin,
   auto str_origin = str_begin;
   string::const_iterator stat_end;
 
-#define PARSE_STAT(T, v, scp)	{					\
-    shared_ptr<T> v##_ptr = make_shared<T>(scp, tokens[origin].linum);	\
+#define PARSE_STAT(T, v)	{					\
+    shared_ptr<T> v##_ptr = make_shared<T>(tokens[origin].linum);	\
     stat_end = PARSER_NAME(v)(str_begin, str_end, origin, *v##_ptr);	\
     stat_ptr = dynamic_pointer_cast<Statement>(v##_ptr);  }
 
@@ -254,23 +253,23 @@ string::const_iterator Parser::parse_stat(string::const_iterator str_begin,
   cout << tokens[origin].code <<endl;
   cout << *str_begin << " linum: "<< tokens[origin].linum <<endl;
   switch (*str_begin) {
-  case 'i': PARSE_STAT(DeclStat, decl, scope);
+  case 'i': PARSE_STAT(DeclStat, decl);
     break;
-  case 'p': PARSE_STAT(PrintStat, print, scope);
+  case 'p': PARSE_STAT(PrintStat, print);
     break;
-  case '{': PARSE_STAT(CompoundStat, comp, make_shared<Scope>(scope));
+  case '{': PARSE_STAT(CompoundStat, comp);
     break;
-  case '?': PARSE_STAT(SelectStat, select, scope);
+  case '?': PARSE_STAT(SelectStat, select);
     break;
-  case 'f': PARSE_STAT(ForStat, for, make_shared<Scope>(scope));
+  case 'f': PARSE_STAT(ForStat, for);
     break;
-  case 'w': PARSE_STAT(WhileStat, while, scope);
+  case 'w': PARSE_STAT(WhileStat, while);
     break;
-  case 'd': PARSE_STAT(DoStat, do, scope);
+  case 'd': PARSE_STAT(DoStat, do);
     break;
-  case 'b': PARSE_STAT(BreakStat, break, scope);
+  case 'b': PARSE_STAT(BreakStat, break);
     break;
-  default: PARSE_STAT(ExprStat, expr, scope);
+  default: PARSE_STAT(ExprStat, expr);
     break;
   }
 

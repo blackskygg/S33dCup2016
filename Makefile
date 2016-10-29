@@ -1,4 +1,4 @@
-CXX=c++
+CXX=g++
 CFLAGS= -std=c++14 -g
 all: 
 	make -j `getconf _NPROCESSORS_ONLN` SeedCup

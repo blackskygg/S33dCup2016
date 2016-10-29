@@ -10,7 +10,7 @@ void Parser::parse_expr(string::const_iterator str_begin,
 			shared_ptr<Expression>& expr)
 {
   smatch m;
-  Expression::ExprType type;
+  Expression::ExprType type = Expression::PRIMARY;
 
   for (auto tpl: expr_tpls) {
     if (regex_search(str_begin, str_end, m, tpl.second,
@@ -101,9 +101,12 @@ void Parser::parse_expr(string::const_iterator str_begin,
     } else  if (m[0].str() == "s") {
       shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst>(0);
       expr = dynamic_pointer_cast<Expression>(prim_ptr);
-    } else {
+    } else if (m[1].str() == "a"){
       shared_ptr<PrimaryExprId> prim_ptr = make_shared<PrimaryExprId>	\
 	(tokens[POS(1)].code);
+      expr = dynamic_pointer_cast<Expression>(prim_ptr);
+    } else {
+      shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst>(0);
       expr = dynamic_pointer_cast<Expression>(prim_ptr);
     }
     break;
@@ -111,6 +114,7 @@ void Parser::parse_expr(string::const_iterator str_begin,
     {
       shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst>(0);
       expr = dynamic_pointer_cast<Expression>(prim_ptr);
+      cout <<" Expression reached default "<<endl;
     }
     break;
   }

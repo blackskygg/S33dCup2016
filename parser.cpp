@@ -4,10 +4,12 @@
 
 using namespace std;
 
+static bool break_flag = false;
+
 int Scope::get_identifier(const string& name)
 {
   unordered_map<string, int>::iterator it;
-  if ((vars.end() == (it = vars.find(name))) && (parent != nullptr))
+  if ((vars.end() == (it = vars.find(name))) && (parent != NULL))
     return parent->get_identifier(name);
   else
     return it->second;
@@ -17,7 +19,7 @@ void Scope::mod_identifier(const string& name, int val)
 {
   unordered_map<string, int>::iterator it;
   
-  if ((vars.end() == (it = vars.find(name))) && (parent != nullptr))
+  if ((vars.end() == (it = vars.find(name))) && (parent != NULL))
     parent->mod_identifier(name, val);
   else
     vars[name] = val;
@@ -70,6 +72,8 @@ int RelationalExpr:: eval(Scope& scope)
     return val1 > val2 ? 1 : 0;
   } else if("<" == op) {
     return val1 < val2 ? 1 : 0;
+  } else {
+    return -1;
   }
 }
 
@@ -81,6 +85,8 @@ int AdditiveExpr:: eval(Scope& scope)
     return val1 + val2;
   } else if("-" == op) {
     return val1 - val2;
+  } else {
+    return -1;
   }
 }
 
@@ -92,6 +98,8 @@ int MultExpr:: eval(Scope& scope)
     return val1 * val2;
   } else if("/" == op) {
     return val1 / val2;
+  } else {
+    return -1;
   }
 }
 
@@ -103,6 +111,8 @@ int UnaryExpr:: eval(Scope& scope)
     return -val;
   } else if("+" == op) {
     return val;
+  } else {
+    return -1;
   }
 }
 
@@ -116,6 +126,8 @@ int PostfixExpr:: eval(Scope& scope)
   } else if("--" == op) {
     scope.mod_identifier(id, val - 1);
     return val - 1;
+  } else {
+    return -1;
   }
 }
 
@@ -147,77 +159,96 @@ int InitDecl::eval(Scope& scope)
   return val;
 }
 
-void DeclStat::execute(Result& result)
+void DeclStat::execute(Result& result, Scope& scope)
 {
   if (has_init)
     result.add_line(linum);
   
   for (auto e: decl_list)
-    e.eval(*scope);
+    e.eval(scope);
 }
 
-void SelectStat::execute(Result& result)
+void SelectStat::execute(Result& result, Scope& scope)
 {
   result.add_line(linum);
-  if (expr->eval(*scope)) {
-    stat1->execute(result);
-  } else {
-    stat2->execute(result);
+  if (expr->eval(scope)) {
+    stat1->execute(result, scope);
+  } else if (has_else) {
+    stat2->execute(result, scope);
   }
 }
 
-void ForStat::execute(Result& result)
+void ForStat::execute(Result& result, Scope& scope)
 {
+  Scope new_scp(&scope);
+  
   if (has_decl)
-    decl.execute(result);
+    decl.execute(result, new_scp);
   else
-    expr[1]->eval(*scope);
+    expr[0]->eval(new_scp);
 
-  for (result.add_line(linum);
-       result.add_line(linum), expr[2]->eval(*scope);
-       expr[3]->eval(*scope)) {
-    stat->execute(result);
+  result.add_line(linum);
+
+  while (result.add_line(linum), expr[1]->eval(new_scp)) {
+    stat->execute(result, new_scp);
+    if (break_flag) {
+      break_flag = false;
+      break;
+    }
+    result.add_line(linum), expr[2]->eval(new_scp);
   }
 }
 
-void WhileStat::execute(Result& result)
+void WhileStat::execute(Result& result, Scope& scope)
 {
-  while(result.add_line(linum), expr->eval(*scope)) {
-    stat->execute(result);
+  while(result.add_line(linum), expr->eval(scope)) {
+    stat->execute(result, scope);
+    if (break_flag) {
+      break_flag = false;
+      break;
+    }
   }
 }
 
-void DoStat::execute(Result& result)
+void DoStat::execute(Result& result, Scope& scope)
 {
   do {
-    stat->execute(result);
-    result.add_line(linum);
-  } while(expr->eval(*scope));
+    stat->execute(result, scope);
+    if (break_flag) {
+      break_flag = false;
+      break;
+    }
+  } while(result.add_line(linum), expr->eval(scope));
 }
 
-void BreakStat::execute(Result& result)
+void BreakStat::execute(Result& result, Scope& scope)
 {
+  break_flag = true;
   result.add_line(linum);
 }
 
-void PrintStat::execute(Result& result)
+void PrintStat::execute(Result& result, Scope& scope)
 {
   result.add_line(linum);
-  expr->eval(*scope);
+  expr->eval(scope);
 }
 
-void ExprStat::execute(Result& result)
+void ExprStat::execute(Result& result, Scope& scope)
 {
   if (!is_empty) {
     result.add_line(linum);
-    expr->eval(*scope);
+    expr->eval(scope);
   }
 }
 
-void CompoundStat::execute(Result& result)
+void CompoundStat::execute(Result& result, Scope& scope)
 {
-  for (auto stat: stat_list)
-    stat->execute(result);
+  Scope new_scp(&scope);
+  for (auto stat: stat_list) {
+    stat->execute(result, new_scp);
+    if (break_flag)
+      break;
+  }
 }
 
 Parser::Parser(vector <Token> &tokens): tokens(tokens)
@@ -275,11 +306,11 @@ void Parser::encode_tokens(std::vector <Token>& tokens, string &s)
 void Parser::parse(Result& result)
 {
   string s;
-  shared_ptr<Scope> global_scp = make_shared<Scope>();
-  CompoundStat stat(global_scp, 1);
+  Scope global;
+  CompoundStat stat(1);
   
   encode_tokens(tokens, s);
-
-  parse_stat_list(s.cbegin(), s.cend(), 0, stat.stat_list, global_scp);
-  stat.execute(result);
+  parse_stat_list(s.cbegin(), s.cend(), 0, stat.stat_list);
+  stat.print();
+  stat.execute(result, global);
 }

@@ -7,8 +7,11 @@
 #include <regex>
 #include <memory>
 #include <unordered_map>
+#include <iostream>
 #include <unordered_set>
 #include "lexer.h"
+
+using namespace std;
 
 class Identifier {
  public:
@@ -18,14 +21,15 @@ class Identifier {
 
 class Scope {
  public:
-  Scope() {parent = nullptr;}; 
-  Scope(std::shared_ptr<Scope> parent) : parent(parent) {};
+ Scope() : parent(nullptr), is_top(true){};
+  Scope(Scope* parent) : parent(parent), is_top(false) {};
   int get_identifier(const std::string& name);
   void set_identifier(const std::string& name, int val);
   void mod_identifier(const std::string& name, int val);
 
  private:
-  std::shared_ptr<Scope> parent;
+  bool is_top = true;
+  Scope* parent = nullptr;
   std::unordered_map<std::string, int> vars;
 };
 
@@ -54,11 +58,21 @@ class Expression{
   } ExprType;
 
   virtual int eval(Scope &scope)  = 0;
+  virtual void print() {
+
+  };
+
 };
 
 class AssignmentExpr: public Expression {
  public:
   int eval(Scope &scope);
+  void print() {
+    cout << "ASSIGN: " <<endl;
+    cout << "ID: " << this->id <<endl;
+    cout << "Expr: ";
+    expr->print();
+  };
 
   std::string id;
   std::shared_ptr<Expression> expr;
@@ -67,6 +81,13 @@ class AssignmentExpr: public Expression {
 class CommaExpr: public Expression {
  public:
   int eval(Scope &scope);
+  void print() {
+    cout << "COMMA: "<< endl;
+    cout << "Expr1: ";
+    expr1->print();
+    cout<<endl << "Expr2: ";
+    expr2->print();
+  };
 
   std::shared_ptr<Expression> expr1;
   std::shared_ptr<Expression> expr2;
@@ -75,6 +96,13 @@ class CommaExpr: public Expression {
 class EqualityExpr: public Expression {
  public:
   int eval(Scope &scope);
+  void print() {
+    cout << "OP: " << op <<endl;
+    cout << "Expr1: ";
+    expr1->print();
+    cout << "Expr2: ";
+    expr2->print();
+  };
 
   std::string op;
   std::shared_ptr<Expression> expr1;
@@ -84,6 +112,13 @@ class EqualityExpr: public Expression {
 class RelationalExpr: public Expression {
  public:
   int eval(Scope &scope);
+  void print() {
+    cout << "OP: " << op <<endl;
+    cout << "Expr1: ";
+    expr1->print();
+    cout <<"Expr2: ";
+    expr2->print();
+  };
 
   std::string op;
   std::shared_ptr<Expression> expr1;
@@ -93,6 +128,13 @@ class RelationalExpr: public Expression {
 class AdditiveExpr: public Expression {
  public:
   int eval(Scope &scope);
+  void print() {
+    cout << "OP: " << op <<endl;
+    cout << "Expr1: ";
+    expr1->print();
+    cout << "Expr2: ";
+    expr2->print();
+  };
 
   std::string op;
   std::shared_ptr<Expression> expr1;
@@ -102,6 +144,13 @@ class AdditiveExpr: public Expression {
 class MultExpr: public Expression {
  public:
   int eval(Scope &scope);
+  void print() {
+    cout << "OP: " << op <<endl;
+    cout << "Expr1: ";
+    expr1->print();
+    cout << "Expr2: ";
+    expr2->print();
+  };
 
   std::string op;
   std::shared_ptr<Expression> expr1;
@@ -111,6 +160,11 @@ class MultExpr: public Expression {
 class UnaryExpr: public Expression {
  public:
   int eval(Scope &scope);
+  void print() {
+    cout << "UNARYOP: " << op <<endl;
+    cout << "Expr: ";
+    expr->print();
+  };
 
   std::string op; 
   std::shared_ptr<Expression> expr;
@@ -119,8 +173,10 @@ class UnaryExpr: public Expression {
 class PrimaryExprConst: public Expression {
  public:
   PrimaryExprConst(int val): val(val) {};
-
   int eval(Scope &scope);
+  void print() {
+    cout << "const: " << val <<endl;
+  };
 
   int val;
 };
@@ -129,6 +185,9 @@ class PrimaryExprId: public Expression {
  public:
  PrimaryExprId(std::string id): id(id) {};
   int eval(Scope &scope);
+  void print() {
+    cout << "ID: " << id <<endl;
+  };
   
   std::string id;
 };
@@ -136,6 +195,11 @@ class PrimaryExprId: public Expression {
 class PostfixExpr: public Expression {
  public:
   int eval(Scope &scope);
+  void print() {
+    cout << "POSTOP: " << op <<endl;
+    cout << "Expr: ";
+    expr->print();
+  };
   
   std::string op; 
   std::shared_ptr<Expression> expr;
@@ -156,16 +220,23 @@ class Statement {
   }StatType;
 
   Statement() = default;
-  Statement(std::shared_ptr<Scope> scope, int linum): scope(scope), linum(linum) {};
-  virtual void execute(Result& lines) = 0;
+  Statement(int linum): linum(linum) {};
+  virtual void execute(Result& result, Scope& scope) {};
+  virtual void print() {
+  };
 
-  std::shared_ptr<Scope> scope;
   int linum;
 };
 
 class InitDecl: public Expression {
  public:
   int eval(Scope &scope);
+  void print() {
+    cout << "InitDecl: " <<  id <<endl;
+    cout << "ID: " <<  id <<endl;
+    cout << "Expr: ";
+    expr->print();
+  };
 
   std::string id;
   std::shared_ptr<Expression> expr;
@@ -173,8 +244,15 @@ class InitDecl: public Expression {
 
 class DeclStat: public Statement {
  public:
-  DeclStat(std::shared_ptr<Scope> scope, int linum): Statement(scope, linum) {};
-  void execute(Result &result);
+  DeclStat(int linum): Statement(linum) {};
+  void execute(Result &result, Scope& scope);
+  void print() {
+    cout << "Decl: " << endl;
+    for(auto decl: this->decl_list) {
+      decl.print();
+    }
+    cout<<endl<<"DeclEnd"<<endl;
+  };
 
   bool has_init = false;
   std::vector<InitDecl> decl_list;
@@ -182,17 +260,34 @@ class DeclStat: public Statement {
 
 class CompoundStat: public Statement {
  public:
-  CompoundStat(std::shared_ptr<Scope> scope, int linum): Statement(scope, linum) {};
-  void execute(Result &result);
+  CompoundStat(int linum): Statement(linum) {};
+  void execute(Result &result, Scope& scope);
+  void print() {
+    cout << "Compound: " << endl;
+    for(auto stat: this->stat_list) {
+      stat->print();
+    }
+    cout<<endl<<"CompoundEnd"<<endl;
+  };
   
   std::vector< std::shared_ptr<Statement> > stat_list;
 };
 
 class SelectStat: public Statement {
  public:
-  SelectStat(std::shared_ptr<Scope> scope, int linum): Statement(scope, linum) {};
-  void execute(Result &result);
+  SelectStat(int linum): Statement(linum) {};
+  void execute(Result &result, Scope& scope);
+  void print() {
+    cout << "If: " << endl;
+    expr->print();
+    stat1->print();
+    if (this->has_else) {
+      stat2->print();
+    }
+    cout<<endl<<"IfEnd"<<endl;
+  };
 
+  bool has_else;
   std::shared_ptr<Expression> expr;
   std::shared_ptr<Statement> stat1;
   std::shared_ptr<Statement> stat2;
@@ -200,9 +295,23 @@ class SelectStat: public Statement {
 
 class ForStat: public Statement {
  public:
- ForStat(std::shared_ptr<Scope> scope, int linum):
-  Statement(scope, linum), decl(scope, linum) {};
-  void execute(Result &result);
+ ForStat(int linum):
+  Statement(linum), decl(linum) {};
+  void execute(Result &result, Scope& scope);
+  void print() {
+    cout << "For: " << endl;
+    if (has_decl)
+      decl.print();
+    else
+      expr[0]->print();
+    cout<<"ForExpr1"<<endl;
+    expr[1]->print();
+    cout<<"ForExpr2"<<endl;
+    expr[2]->print();
+    cout<<"ForStat2"<<endl;
+    stat->print();
+    cout<<endl<<"ForEnd"<<endl;
+  };
 
   bool has_decl = false;
   DeclStat decl;
@@ -212,8 +321,14 @@ class ForStat: public Statement {
 
 class WhileStat: public Statement {
  public:
-  WhileStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum) {};
-  void execute(Result &result);
+  WhileStat(int linum) : Statement(linum) {};
+  void execute(Result &result, Scope& scope);
+  void print() {
+    cout << "While: " << endl;
+    expr->print();
+    stat->print();
+    cout<<endl<<"WhileEnd"<<endl;
+  };
 
   std::shared_ptr<Expression> expr;
   std::shared_ptr<Statement> stat;
@@ -221,14 +336,24 @@ class WhileStat: public Statement {
 
 class BreakStat: public Statement {
  public:
-  BreakStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum) {};
-  void execute(Result &result);
+  BreakStat(int linum) : Statement(linum) {};
+  void execute(Result &result, Scope& scope);
+  void print() {
+    cout << "Break: " << endl;
+    cout << "BreakEnd: "<<endl;
+  };
 };
 
 class DoStat: public Statement {
  public:
-  DoStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum) {};
-  void execute(Result &result);
+  DoStat(int linum) : Statement(linum) {};
+  void execute(Result &result, Scope& scope);
+  void print() {
+    cout << "Do: " << endl;
+    expr->print();
+    stat->print();
+    cout<<endl<<"DoEnd"<<endl;
+  };
 
   std::shared_ptr<Expression> expr;
   std::shared_ptr<Statement> stat;
@@ -236,18 +361,28 @@ class DoStat: public Statement {
 
 class PrintStat: public Statement {
  public:
-  PrintStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum){};
-  void execute(Result &result);
+  PrintStat(int linum) : Statement(linum){};
+  void execute(Result &result, Scope& scope);
+  void print() {
+    cout << "Print: " << endl;
+    expr->print();
+    cout<<endl<<"PrintEnd"<<endl;
+  };
 
   std::shared_ptr<Expression> expr;
 };
 
 class ExprStat : public Statement {
  public:
- ExprStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum) {};
-  void execute(Result &result);
+ ExprStat(int linum) : Statement(linum) {};
+  void execute(Result &result, Scope& scope);
+  void print() {
+    cout << "ExprStat: " << endl;
+    expr->print();
+    cout<<endl<<"ExprStatEnd"<<endl;
+  };
 
-  bool is_empty;
+  bool is_empty = false;
   std::shared_ptr<Expression> expr;
 };
 
@@ -293,15 +428,13 @@ class Parser {
     parse_stat(std::string::const_iterator begin,
 	       std::string::const_iterator end,
 	       size_t origin,
-	       std::shared_ptr<Statement>& stats,
-	       std::shared_ptr<Scope> scope);
+	       std::shared_ptr<Statement>& stats);
 
   std::string::const_iterator
     parse_stat_list(std::string::const_iterator begin,
 		    std::string::const_iterator end,
 		    size_t origin,
-		    std::vector< std::shared_ptr<Statement> >& stats,
-		    std::shared_ptr<Scope> scope);
+		    std::vector< std::shared_ptr<Statement> >& stats);
   
   void encode_tokens(std::vector <Token>& tokens, std::string &s);
 

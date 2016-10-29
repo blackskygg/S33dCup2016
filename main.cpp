@@ -35,8 +35,10 @@ int main(int argc, char *argv[])
   Lexer lexer;
   vector<Token> tokens;
   lexer.scan(buf, tokens);
+  /*
   for(auto token: tokens)
     token.print();
+  */
 
   Parser parser(tokens);
   Result result;
