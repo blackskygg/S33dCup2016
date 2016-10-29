@@ -6,7 +6,7 @@
 #define consume() do { (*idx)++; } while (0)
 #define malloc_node() ((struct syntax_node *)malloc(sizeof(struct syntax_node)))
 
-extern struct token tokens[65536];
+extern struct token tokens[];
 
 struct syntax_node *generate_ast()
 {
@@ -143,13 +143,13 @@ struct syntax_node *exp_stat(size_t *idx)
     struct syntax_node *node = malloc_node();
 
     node->type = SYN_EXP_STAT;
-    node->token_idx = *idx;
 
     if (check(SEMI_COLON))
         node->children = NULL;
     else
         node->children = expression(idx);
 
+    node->token_idx = *idx;
     consume(); // ;
 
     node->sibling = NULL;
@@ -250,7 +250,6 @@ struct syntax_node *assignment_exp(size_t *idx)
     consume(); // ID
 
     node->children->sibling = assignment_exp(idx);
-
     node->sibling = NULL;
 
     return node;
@@ -267,7 +266,8 @@ struct syntax_node *equality_exp(size_t *idx)
     if (check(EQ) || check(NE)) {
         consume(); // == | !=
 
-        node->sibling = equality_exp(idx);
+        node->children->sibling = equality_exp(idx);
+        node->sibling = NULL;
 
         return node;
     } else {
@@ -288,7 +288,8 @@ struct syntax_node *relational_exp(size_t *idx)
     if (check(GT) || check(LT) || check(GE) || check(LE)) {
         consume(); // > | < | >= | <=
 
-        node->sibling = relational_exp(idx);
+        node->children->sibling = relational_exp(idx);
+        node->sibling = NULL;
 
         return node;
     } else {
@@ -310,7 +311,8 @@ struct syntax_node *additive_exp(size_t *idx)
     if (check(ADD) || check(SUB)) {
         consume(); // + | -
 
-        node->sibling = additive_exp(idx);
+        node->children->sibling = additive_exp(idx);
+        node->sibling = NULL;
 
         return node;
     } else {
@@ -331,7 +333,8 @@ struct syntax_node *mult_exp(size_t *idx)
     if (check(MUL) || check(DIV)) {
         consume(); // * | /
 
-        node->sibling = mult_exp(idx);
+        node->children->sibling = mult_exp(idx);
+        node->sibling = NULL;
 
         return node;
     } else {
@@ -343,70 +346,43 @@ struct syntax_node *mult_exp(size_t *idx)
 
 struct syntax_node *unary_exp(size_t *idx)
 {
-    struct syntax_node *node = malloc_node();
+    struct syntax_node *root;
 
-    node->type = SYN_UNARY_EXP;
-    node->token_idx = *idx;
-
-    struct syntax_node **iter = &(node->children);
+    struct syntax_node **iter = &root;
     while (check(ADD) || check(SUB)) {
         *iter = malloc_node();
-        (*iter)->type = check(ADD) ? SYN_POS : SYN_NEG;
+        (*iter)->type = SYN_UNARY_EXP;
         (*iter)->token_idx = *idx;
 
         consume(); // + | -
 
         (*iter)->children = NULL;
         (*iter)->sibling = NULL;
-        iter = &((*iter)->sibling);
+        iter = &((*iter)->children);
     }
 
     *iter = postfix_exp(idx);
 
-    if (*iter == node->children) {
-        struct syntax_node *result = node->children;
-        free(node);
-        return result;
-    } else {
-        node->sibling = NULL;
-        return node;
-    }
+    return root;
 }
 
 struct syntax_node *postfix_exp(size_t *idx)
 {
-    struct syntax_node *node = malloc_node();
+    struct syntax_node *root = primary_exp(idx);
+    while (root && (check(INC) || check(DEC))) {
+        struct syntax_node *new_root = malloc_node();
+        new_root->type = SYN_POSTFIX_EXP;
+        new_root->token_idx = *idx;
 
-    node->type = SYN_POSTFIX_EXP;
-    node->token_idx = *idx;
-    node->children = primary_exp(idx);
+        consume(); // ++ | --
 
-    if (node->children == NULL) {
-        free(node);
-        return NULL;
+        new_root->children = root;
+        new_root->sibling = NULL;
+
+        root = new_root;
     }
 
-    struct syntax_node *iter = node->children;
-    while (iter && (check(INC) || check(DEC))) {
-        iter->sibling = malloc_node();
-        iter->sibling->type = check(INC) ? SYN_INC : SYN_DEC;
-        iter->sibling->token_idx = *idx;
-
-        consume();
-
-        iter->sibling->children = NULL;
-        iter->sibling->sibling = NULL;
-        iter = iter->sibling;
-    }
-
-    if (node->children->sibling) {
-        node->sibling = NULL;
-        return node;
-    } else {
-        struct syntax_node *result = node->children;
-        free(node);
-        return result;
-    }
+    return root;
 }
 
 struct syntax_node *primary_exp(size_t *idx)

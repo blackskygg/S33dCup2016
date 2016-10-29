@@ -26,8 +26,6 @@ enum syntax_type {
     SYN_POSTFIX_EXP,
     SYN_INT_CONST,
     SYN_ID,
-    SYN_INC,
-    SYN_DEC,
     SYN_POS,
     SYN_NEG
 };
