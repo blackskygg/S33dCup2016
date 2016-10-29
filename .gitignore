@@ -30,3 +30,6 @@
 
 # Emacs Residules
 *~
+
+# debug files
+*.dSYM
