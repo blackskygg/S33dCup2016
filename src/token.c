@@ -55,20 +55,28 @@ struct token token_scan(char *code)
     static int line = 1;
     struct token token = { SP, NULL, 0, 0 };
 
+    size_t max_match_len = 0;
+    enum token_type max_match_type = (enum token_type)0;
+
+    regmatch_t matched;
     for (size_t i = 0; i < TOKEN_TYPE_NUM; i++) {
-        regmatch_t matched;
         int match_status = regexec(token_re + i, code, 1, &matched, 0);
         if (matched.rm_so == 0 && match_status != REG_NOMATCH) {
-            token.type = (enum token_type)i;
-            token.literal = code;
-            token.length = (size_t)matched.rm_eo;
-            token.line = line;
-            for (size_t i = 0; i < token.length; i++)
-                if (token.literal[i] == '\r')
-                    line++;
-            break;
+            if (max_match_len < matched.rm_eo) {
+                max_match_len = matched.rm_eo;
+                max_match_type = (enum token_type)i;
+            }
         }
     }
+
+    regexec(token_re + (size_t) max_match_type, code, 1, &matched, 0);
+    token.type = max_match_type;
+    token.literal = code;
+    token.length = (size_t)matched.rm_eo;
+    token.line = line;
+    for (size_t i = 0; i < token.length; i++)
+        if (token.literal[i] == '\r')
+            line++;
 
     return token;
 }
