@@ -208,6 +208,7 @@ int eval_assignment_exp(struct syntax_node *root)
     int val = eval_assignment_exp(root->children->sibling);
 
     set_record(key, len, val);
+
     return val;
 }
 
@@ -249,13 +250,13 @@ int eval_relational_exp(struct syntax_node *root)
         struct syntax_node *exp1 = root->children, *exp2 = root->children->sibling;
 
         if (t->type == LT)
-            res =  eval_equality_exp(exp1) < eval_relational_exp(exp2); 
+            res =  eval_relational_exp(exp1) < eval_additive_exp(exp2); 
         else if (t->type == GT)
-            res =  eval_equality_exp(exp1) > eval_relational_exp(exp2); 
+            res =  eval_relational_exp(exp1) > eval_additive_exp(exp2); 
         else if (t->type == LE)
-            res =  eval_equality_exp(exp1) <= eval_relational_exp(exp2); 
+            res =  eval_relational_exp(exp1) <= eval_additive_exp(exp2); 
         else if (t->type == GE)
-            res =  eval_equality_exp(exp1) >= eval_relational_exp(exp2); 
+            res =  eval_relational_exp(exp1) >= eval_additive_exp(exp2); 
     }
 
     return res;
@@ -272,9 +273,9 @@ int eval_additive_exp(struct syntax_node *root)
         struct syntax_node *exp1 = root->children, *exp2 = root->children->sibling;
 
         if (t->type == ADD)
-            res =  eval_equality_exp(exp1) + eval_relational_exp(exp2); 
+            res =  eval_additive_exp(exp1) + eval_mult_exp(exp2); 
         else if (t->type == SUB)
-            res =  eval_equality_exp(exp1) - eval_relational_exp(exp2); 
+            res =  eval_additive_exp(exp1) - eval_mult_exp(exp2); 
     }
 
     return res;
@@ -291,9 +292,9 @@ int eval_mult_exp(struct syntax_node *root)
         struct syntax_node *exp1 = root->children, *exp2 = root->children->sibling;
 
         if (t->type == MUL)
-            res =  eval_equality_exp(exp1) * eval_relational_exp(exp2); 
+            res =  eval_mult_exp(exp1) * eval_unary_exp(exp2); 
         else if (t->type == DIV)
-            res =  eval_equality_exp(exp1) / eval_relational_exp(exp2); 
+            res =  eval_mult_exp(exp1) / eval_unary_exp(exp2); 
     }
 
     return res;
@@ -310,9 +311,9 @@ int eval_unary_exp(struct syntax_node *root)
         struct syntax_node *exp = root->children;
 
         if (t->type == ADD)
-            res = +eval_equality_exp(exp);
+            res = +eval_unary_exp(exp);
         else if (t->type == SUB)
-            res = -eval_equality_exp(exp);
+            res = -eval_unary_exp(exp);
     }
 
     return res;
