@@ -31,14 +31,14 @@ selection_stat  :   'if' '(' exp ')' stat
                 ;
 iteration_stat  :   'while' '(' exp ')' stat
                 |   'do' stat 'while' '(' exp ')' ';'
-                |   for '(' exp ';' exp ';' exp ')' stat
-                |   for '(' exp ';' exp ';'     ')' stat
-                |   for '(' exp ';'     ';' exp ')' stat
-                |   for '(' exp ';'     ';'     ')' stat
-                |   for '('     ';' exp ';' exp ')' stat
-                |   for '('     ';' exp ';'     ')' stat
-                |   for '('     ';'     ';' exp ')' stat
-                |   for '('     ';'     ';'     ')' stat
+                |   for '(' init_decl_list ';' exp ';' exp ')' stat
+                |   for '(' init_decl_list ';' exp ';'     ')' stat
+                |   for '(' init_decl_list ';'     ';' exp ')' stat
+                |   for '(' init_decl_list ';'     ';'     ')' stat
+                |   for '('                ';' exp ';' exp ')' stat
+                |   for '('                ';' exp ';'     ')' stat
+                |   for '('                ';'     ';' exp ')' stat
+                |   for '('                ';'     ';'     ')' stat
                 ;
 jump_stat       :   'break' ';'
                 ;
