@@ -2,9 +2,13 @@
 #include <stdlib.h>
 #include "evaluate.h"
 
+// #define DEBUG
+
 extern struct token tokens[];
 
-int prev_line = -1;
+extern FILE *fout;
+
+int prev_line = 0;
 struct scope_record *scope = NULL;
 int break_flag = 0;
 
@@ -13,6 +17,7 @@ int break_flag = 0;
 void enter_scope()
 {
     struct scope_record *new_head = malloc_record();
+
     new_head->is_scope_flag = 1;
     new_head->key = NULL;
     new_head->len = 0;
@@ -43,13 +48,12 @@ void leave_scope()
 
 int keycmp(char *k1, size_t l1, char *k2, size_t l2)
 {
-    if (l1 != l2 || !k1 || !k2) 
+    if (l1 != l2 || !k1 || !k2)
         return 0;
 
-    for (size_t i = 0; i < l1; ++i) {
+    for (size_t i = 0; i < l1; ++i)
         if (k1[i] != k2[i])
             return 0;
-    }
 
     return 1;
 }
@@ -57,6 +61,7 @@ int keycmp(char *k1, size_t l1, char *k2, size_t l2)
 struct scope_record *new_record(char *key, size_t len, int val)
 {
     struct scope_record *new_head = malloc_record();
+
     new_head->is_scope_flag = 0;
     new_head->key = key;
     new_head->len = len;
@@ -68,6 +73,7 @@ struct scope_record *new_record(char *key, size_t len, int val)
 int get_record(char *key, size_t len)
 {
     struct scope_record *iter = scope;
+
     while (iter && !keycmp(iter->key, iter->len, key, len))
         iter = iter->prev;
     return iter->val;
@@ -76,6 +82,7 @@ int get_record(char *key, size_t len)
 void set_record(char *key, size_t len, int val)
 {
     struct scope_record *iter = scope;
+
     while (iter && !keycmp(iter->key, iter->len, key, len))
         iter = iter->prev;
     iter->val = val;
@@ -99,15 +106,15 @@ int eval_stat(struct syntax_node *root)
     if (root == NULL)
         return 0;
     switch (root->type) {
-        case SYN_DECL: return eval_decl_stat(root);
-        case SYN_COMPOUND_STAT: return eval_compound_stat(root);
-        case SYN_SELECTION_STAT: return eval_selection_stat(root);
-        case SYN_WHILE_STAT: return eval_while_stat(root);
-        case SYN_DO_WHILE_STAT: return eval_do_while_stat(root);
-        case SYN_FOR_STAT: return eval_for_stat(root);
-        case SYN_JUMP_STAT: return eval_jump_stat(root);
-        case SYN_PRINT_STAT: return eval_print_stat(root);
-        default: return eval_exp_stat(root);
+    case SYN_DECL: return eval_decl_stat(root);
+    case SYN_COMPOUND_STAT: return eval_compound_stat(root);
+    case SYN_SELECTION_STAT: return eval_selection_stat(root);
+    case SYN_WHILE_STAT: return eval_while_stat(root);
+    case SYN_DO_WHILE_STAT: return eval_do_while_stat(root);
+    case SYN_FOR_STAT: return eval_for_stat(root);
+    case SYN_JUMP_STAT: return eval_jump_stat(root);
+    case SYN_PRINT_STAT: return eval_print_stat(root);
+    default: return eval_exp_stat(root);
     }
 }
 
@@ -120,6 +127,7 @@ int eval_init_decl_list(struct syntax_node *root)
 {
     int result = 0;
     struct syntax_node *iter = root;
+
     while (iter) {
         result = eval_init_decl(iter);
         iter = iter->sibling;
@@ -133,6 +141,7 @@ int eval_init_decl(struct syntax_node *root)
     char *key = t->literal;
     size_t len = t->length;
     int val = root->children->sibling ? eval_expression(root->children->sibling) : 0;
+
     scope = new_record(key, len, val);
 
     return 0;
@@ -145,7 +154,11 @@ int eval_exp_stat(struct syntax_node *root)
     } else {
         size_t line = tokens[root->token_idx].line;
         if (line != prev_line) {
-            printf("empty stat : %ld\n", line);
+            printf("empty stat : %ld", line);
+            if (prev_line)
+                fprintf(fout, " %ld", line);
+            else
+                fprintf(fout, "%ld", line);
             prev_line = line;
         }
 
@@ -168,11 +181,10 @@ int eval_selection_stat(struct syntax_node *root)
     struct syntax_node *body = cond->sibling;
     struct syntax_node *else_body = body->sibling;
 
-    if (eval_expression(cond->children)) {
+    if (eval_expression(cond->children))
         eval_stat(body->children);
-    } else {
+    else
         eval_stat(else_body->children);
-    }
 
     return 0;
 }
@@ -203,7 +215,7 @@ int eval_do_while_stat(struct syntax_node *root)
 
         if (break_flag)
             break;
-    } while (eval_expression(cond->children) );
+    } while (eval_expression(cond->children));
 
     break_flag = 0;
 
@@ -225,6 +237,10 @@ int eval_for_stat(struct syntax_node *root)
             size_t line = tokens[root->token_idx].line;
             if (line != prev_line) {
                 printf("empty for cond : %ld\n", line);
+                if (prev_line)
+                    fprintf(fout, " %ld", line);
+                else
+                    fprintf(fout, "%ld", line);
                 prev_line = line;
             }
         }
@@ -249,7 +265,11 @@ int eval_jump_stat(struct syntax_node *root)
 
     size_t line = tokens[root->token_idx].line;
     if (line != prev_line) {
-        printf("break stat : %ld\n", line);
+        printf("break_stat : %ld\n", line);
+        if (prev_line)
+            fprintf(fout, " %ld", line);
+        else
+            fprintf(fout, "%ld", line);
         prev_line = line;
     }
 
@@ -258,15 +278,14 @@ int eval_jump_stat(struct syntax_node *root)
 
 int eval_print_stat(struct syntax_node *root)
 {
-
     return eval_expression(root->children);
 }
-
 
 int eval_expression(struct syntax_node *root)
 {
     int result = 0;
     struct syntax_node *iter = root;
+
     while (iter) {
         result = eval_assignment_exp(iter);
         iter = iter->sibling;
@@ -295,8 +314,13 @@ int eval_equality_exp(struct syntax_node *root)
     int res = 0;
 
     size_t line = tokens[root->token_idx].line;
+
     if (line != prev_line) {
         printf("eval line : %ld\n", line);
+        if (prev_line)
+            fprintf(fout, " %ld", line);
+        else
+            fprintf(fout, "%ld", line);
         prev_line = line;
     }
 
@@ -307,12 +331,12 @@ int eval_equality_exp(struct syntax_node *root)
         struct syntax_node *exp1 = root->children, *exp2 = root->children->sibling;
 
         if (t->type == EQ)
-            res =  eval_equality_exp(exp1) == eval_relational_exp(exp2); 
+            res = eval_equality_exp(exp1) == eval_relational_exp(exp2);
         else if (t->type == NE)
-            res =  eval_equality_exp(exp1) != eval_relational_exp(exp2); 
+            res = eval_equality_exp(exp1) != eval_relational_exp(exp2);
     }
 
-    printf("(%d)\n", res);
+    printf("\trval_expr = %d\n", res);
 
     return res;
 }
@@ -328,13 +352,13 @@ int eval_relational_exp(struct syntax_node *root)
         struct syntax_node *exp1 = root->children, *exp2 = root->children->sibling;
 
         if (t->type == LT)
-            res =  eval_relational_exp(exp1) < eval_additive_exp(exp2); 
+            res = eval_relational_exp(exp1) < eval_additive_exp(exp2);
         else if (t->type == GT)
-            res =  eval_relational_exp(exp1) > eval_additive_exp(exp2); 
+            res = eval_relational_exp(exp1) > eval_additive_exp(exp2);
         else if (t->type == LE)
-            res =  eval_relational_exp(exp1) <= eval_additive_exp(exp2); 
+            res = eval_relational_exp(exp1) <= eval_additive_exp(exp2);
         else if (t->type == GE)
-            res =  eval_relational_exp(exp1) >= eval_additive_exp(exp2); 
+            res = eval_relational_exp(exp1) >= eval_additive_exp(exp2);
     }
 
     return res;
@@ -351,9 +375,9 @@ int eval_additive_exp(struct syntax_node *root)
         struct syntax_node *exp1 = root->children, *exp2 = root->children->sibling;
 
         if (t->type == ADD)
-            res =  eval_additive_exp(exp1) + eval_mult_exp(exp2); 
+            res = eval_additive_exp(exp1) + eval_mult_exp(exp2);
         else if (t->type == SUB)
-            res =  eval_additive_exp(exp1) - eval_mult_exp(exp2); 
+            res = eval_additive_exp(exp1) - eval_mult_exp(exp2);
     }
 
     return res;
@@ -370,9 +394,9 @@ int eval_mult_exp(struct syntax_node *root)
         struct syntax_node *exp1 = root->children, *exp2 = root->children->sibling;
 
         if (t->type == MUL)
-            res =  eval_mult_exp(exp1) * eval_unary_exp(exp2); 
+            res = eval_mult_exp(exp1) * eval_unary_exp(exp2);
         else if (t->type == DIV)
-            res =  eval_mult_exp(exp1) / eval_unary_exp(exp2); 
+            res = eval_mult_exp(exp1) / eval_unary_exp(exp2);
     }
 
     return res;
@@ -441,4 +465,3 @@ int eval_primary_exp(struct syntax_node *root)
 
     return res;
 }
-

@@ -7,6 +7,8 @@
 
 struct token tokens[65536];
 
+FILE *fout = NULL;
+
 extern struct scope_record *scope;
 
 char *read_code(const char *fname)
@@ -25,6 +27,8 @@ char *read_code(const char *fname)
     char *buf = (char *)malloc(sizeof(char) * (fsize + 1));
     fread(buf, 1, fsize, fcode);
     buf[fsize] = '\0';
+
+    fclose(fcode);
 
     return buf;
 }
@@ -63,12 +67,17 @@ int main(int argc, char const *argv[])
     // MALLOC root
     struct syntax_node *root = generate_ast();
 
+    fout = fopen("output.txt", "w");
+
     // DEBUG display
     print_ast(root, 0);
 
     enter_scope();
+    // printer
     eval_stat_list(root);
     leave_scope();
+
+    fclose(fout);
 
     // FREE root
     destory_ast(root);
