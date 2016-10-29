@@ -296,7 +296,13 @@ struct syntax_node *for_stat(size_t *idx)
     struct syntax_node *bootstrap = node->children;
     bootstrap->type = SYN_BOOTSTRAP;
     bootstrap->token_idx = *idx;
-    bootstrap->children = check(DECL) ? init_decl_list(idx) : expression(idx);
+    if (check(DECL)) {
+        consume();
+        bootstrap->children =init_decl_list(idx);
+    } else {
+        bootstrap->children =expression(idx);
+
+    }
 
     consume(); // ;
 
