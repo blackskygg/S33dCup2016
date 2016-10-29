@@ -5,12 +5,12 @@
 extern struct token tokens[];
 
 int prev_line = -1;
-
 struct scope_record *scope = NULL;
+int break_flag = 0;
 
 #define malloc_record() ((struct scope_record *)malloc(sizeof(struct scope_record)))
 
-struct scope_record *enter_scope()
+void enter_scope()
 {
     struct scope_record *new_head = malloc_record();
     new_head->is_scope_flag = 1;
@@ -18,10 +18,13 @@ struct scope_record *enter_scope()
     new_head->len = 0;
     new_head->val = 0;
     new_head->prev = scope;
-    return new_head;
+
+    scope = new_head;
+
+    return;
 }
 
-struct scope_record *leave_scope()
+void leave_scope()
 {
     struct scope_record *new_head = NULL;
 
@@ -35,7 +38,7 @@ struct scope_record *leave_scope()
         free(scope);
     }
 
-    return new_head;
+    scope = new_head;
 }
 
 int keycmp(char *k1, size_t l1, char *k2, size_t l2)
@@ -83,7 +86,7 @@ int eval_stat_list(struct syntax_node *root)
 {
     struct syntax_node *iter = root->children;
 
-    while (iter) {
+    while (iter && !break_flag) {
         eval_stat(iter);
         iter = iter->sibling;
     }
@@ -93,12 +96,14 @@ int eval_stat_list(struct syntax_node *root)
 
 int eval_stat(struct syntax_node *root)
 {
+    if (root == NULL)
+        return 0;
     switch (root->type) {
         case SYN_DECL: return eval_decl_stat(root);
         case SYN_COMPOUND_STAT: return eval_compound_stat(root);
         case SYN_SELECTION_STAT: return eval_selection_stat(root);
         case SYN_WHILE_STAT: return eval_while_stat(root);
-        case SYN_DO_WHILE_STAT: return eval_while_stat(root);
+        case SYN_DO_WHILE_STAT: return eval_do_while_stat(root);
         case SYN_FOR_STAT: return eval_for_stat(root);
         case SYN_JUMP_STAT: return eval_jump_stat(root);
         case SYN_PRINT_STAT: return eval_print_stat(root);
@@ -150,31 +155,104 @@ int eval_exp_stat(struct syntax_node *root)
 
 int eval_compound_stat(struct syntax_node *root)
 {
-    return eval_stat_list(root->children);
+    enter_scope();
+    eval_stat_list(root->children);
+    leave_scope();
+
+    return 0;
 }
 
 int eval_selection_stat(struct syntax_node *root)
 {
+    struct syntax_node *cond = root->children;
+    struct syntax_node *body = cond->sibling;
+    struct syntax_node *else_body = body->sibling;
+
+    if (eval_expression(cond->children)) {
+        eval_stat(body->children);
+    } else {
+        eval_stat(else_body->children);
+    }
+
     return 0;
 }
 
 int eval_while_stat(struct syntax_node *root)
 {
+    struct syntax_node *cond = root->children;
+    struct syntax_node *body = cond->sibling;
+
+    while (eval_expression(cond->children) && !break_flag) {
+        eval_stat(body->children);
+        if (break_flag)
+            break;
+    }
+
+    break_flag = 0;
+
     return 0;
 }
 
 int eval_do_while_stat(struct syntax_node *root)
 {
+    struct syntax_node *body = root->children;
+    struct syntax_node *cond = body->sibling;
+
+    do {
+        eval_stat(body->children);
+
+        if (break_flag)
+            break;
+    } while (eval_expression(cond->children) );
+
+    break_flag = 0;
+
     return 0;
 }
 
 int eval_for_stat(struct syntax_node *root)
 {
+    struct syntax_node *bootstrap = root->children;
+    struct syntax_node *cond = bootstrap->sibling;
+    struct syntax_node *stepin = cond->sibling;
+    struct syntax_node *body = stepin->sibling;
+
+    enter_scope();
+    for (eval_init_decl_list(bootstrap->children);
+         eval_expression(cond->children) || cond->children == NULL;
+         eval_expression(stepin->children)) {
+        if (cond->children == NULL) {
+            size_t line = tokens[root->token_idx].line;
+            if (line != prev_line) {
+                printf("empty for cond : %ld\n", line);
+                prev_line = line;
+            }
+        }
+
+        enter_scope();
+        eval_stat(body->children);
+        leave_scope();
+
+        if (break_flag)
+            break;
+    }
+    leave_scope();
+
+    break_flag = 0;
+
     return 0;
 }
 
 int eval_jump_stat(struct syntax_node *root)
 {
+    break_flag = 1;
+
+    size_t line = tokens[root->token_idx].line;
+    if (line != prev_line) {
+        printf("break stat : %ld\n", line);
+        prev_line = line;
+    }
+
     return 0;
 }
 
@@ -347,7 +425,11 @@ int eval_primary_exp(struct syntax_node *root)
     struct token *t = tokens + root->token_idx;
 
     if (root->type == SYN_ID) {
+        printf("fetching : ");
+        for (size_t i = 0; i < t->length; ++i)
+            putchar(t->literal[i]);
         res = get_record(t->literal, t->length);
+        printf(" = %d\n", res);
     } else if (root->type == SYN_INT_CONST) {
         char tmp = t->literal[t->length];
         t->literal[t->length] = '\0';

@@ -11,8 +11,8 @@ struct scope_record {
     struct scope_record *	prev;
 };
 
-struct scope_record *enter_scope();
-struct scope_record *leave_scope();
+void enter_scope();
+void leave_scope();
 int keycmp(char *k1, size_t l1, char *k2, size_t l2);
 struct scope_record *new_record(char *key, size_t len, int val);
 int get_record(char *key, size_t len);

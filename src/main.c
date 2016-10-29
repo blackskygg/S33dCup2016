@@ -66,7 +66,7 @@ int main(int argc, char const *argv[])
     // DEBUG display
     print_ast(root, 0);
 
-    scope = enter_scope();
+    enter_scope();
     eval_stat_list(root);
     leave_scope();
 
