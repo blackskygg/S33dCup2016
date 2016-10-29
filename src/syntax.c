@@ -213,7 +213,21 @@ struct syntax_node *jump_stat(size_t *idx)
 
 struct syntax_node *print_stat(size_t *idx)
 {
-    return NULL;
+    struct syntax_node *node = malloc_node();
+    node->type = SYN_PRINT_STAT;
+    node->token_idx = *idx;
+
+    consume(); // printf
+    consume(); // (
+
+    node->children = expression(idx);
+
+    consume(); // )
+    consume(); // ;
+
+    node->sibling = NULL;
+
+    return node;
 }
 
 struct syntax_node *argument_list(size_t *idx)
@@ -422,7 +436,7 @@ struct syntax_node *primary_exp(size_t *idx)
 
 struct syntax_node *rotate_exp(struct syntax_node *root)
 {
-    if (!root->children)
+    if (!root || !root->children)
         return root;
     struct syntax_node *left = root->children->sibling;
     if (left == NULL || left->type != root->type) {
