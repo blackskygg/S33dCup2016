@@ -523,7 +523,7 @@ struct syntax_node *postfix_exp(size_t *idx)
 {
     struct syntax_node *root = primary_exp(idx);
 
-    while (root && (check(INC) || check(DEC))) {
+    if (root && (check(INC) || check(DEC))) {
         struct syntax_node *new_root = malloc_node();
         new_root->type = SYN_POSTFIX_EXP;
         new_root->token_idx = *idx;
