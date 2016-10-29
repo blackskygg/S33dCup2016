@@ -4,6 +4,8 @@
 
 extern struct token tokens[];
 
+int prev_line = -1;
+
 struct scope_record *scope = NULL;
 
 #define malloc_record() ((struct scope_record *)malloc(sizeof(struct scope_record)))
@@ -91,7 +93,6 @@ int eval_stat_list(struct syntax_node *root)
 
 int eval_stat(struct syntax_node *root)
 {
-    printf("stat line : %ld\n", tokens[root->token_idx].line);
     switch (root->type) {
         case SYN_DECL: return eval_decl_stat(root);
         case SYN_COMPOUND_STAT: return eval_compound_stat(root);
@@ -137,6 +138,12 @@ int eval_exp_stat(struct syntax_node *root)
     if (root->children) {
         return eval_expression(root->children);
     } else {
+        size_t line = tokens[root->token_idx].line;
+        if (line != prev_line) {
+            printf("empty stat : %ld\n", line);
+            prev_line = line;
+        }
+
         return 0;
     }
 }
@@ -173,7 +180,8 @@ int eval_jump_stat(struct syntax_node *root)
 
 int eval_print_stat(struct syntax_node *root)
 {
-    return 0;
+
+    return eval_expression(root->children);
 }
 
 
@@ -205,37 +213,149 @@ int eval_assignment_exp(struct syntax_node *root)
 
 int eval_equality_exp(struct syntax_node *root)
 {
-    printf("execute line : %ld\n", tokens[root->token_idx].line);
-    return 0;
+    int res = 0;
+
+    size_t line = tokens[root->token_idx].line;
+    if (line != prev_line) {
+        printf("eval line : %ld\n", line);
+        prev_line = line;
+    }
+
+    if (root->type != SYN_EQUALITY_EXP) {
+        res = eval_relational_exp(root);
+    } else {
+        struct token *t = tokens + root->token_idx;
+        struct syntax_node *exp1 = root->children, *exp2 = root->children->sibling;
+
+        if (t->type == EQ)
+            res =  eval_equality_exp(exp1) == eval_relational_exp(exp2); 
+        else if (t->type == NE)
+            res =  eval_equality_exp(exp1) != eval_relational_exp(exp2); 
+    }
+
+    printf("(%d)\n", res);
+
+    return res;
 }
 
 int eval_relational_exp(struct syntax_node *root)
 {
-    return 0;
+    int res = 0;
+
+    if (root->type != SYN_RELATIONAL_EXP) {
+        res = eval_additive_exp(root);
+    } else {
+        struct token *t = tokens + root->token_idx;
+        struct syntax_node *exp1 = root->children, *exp2 = root->children->sibling;
+
+        if (t->type == LT)
+            res =  eval_equality_exp(exp1) < eval_relational_exp(exp2); 
+        else if (t->type == GT)
+            res =  eval_equality_exp(exp1) > eval_relational_exp(exp2); 
+        else if (t->type == LE)
+            res =  eval_equality_exp(exp1) <= eval_relational_exp(exp2); 
+        else if (t->type == GE)
+            res =  eval_equality_exp(exp1) >= eval_relational_exp(exp2); 
+    }
+
+    return res;
 }
 
 int eval_additive_exp(struct syntax_node *root)
 {
-    return 0;
+    int res = 0;
+
+    if (root->type != SYN_ADDITIVE_EXP) {
+        res = eval_mult_exp(root);
+    } else {
+        struct token *t = tokens + root->token_idx;
+        struct syntax_node *exp1 = root->children, *exp2 = root->children->sibling;
+
+        if (t->type == ADD)
+            res =  eval_equality_exp(exp1) + eval_relational_exp(exp2); 
+        else if (t->type == SUB)
+            res =  eval_equality_exp(exp1) - eval_relational_exp(exp2); 
+    }
+
+    return res;
 }
 
 int eval_mult_exp(struct syntax_node *root)
 {
-    return 0;
+    int res = 0;
+
+    if (root->type != SYN_MULT_EXP) {
+        res = eval_unary_exp(root);
+    } else {
+        struct token *t = tokens + root->token_idx;
+        struct syntax_node *exp1 = root->children, *exp2 = root->children->sibling;
+
+        if (t->type == MUL)
+            res =  eval_equality_exp(exp1) * eval_relational_exp(exp2); 
+        else if (t->type == DIV)
+            res =  eval_equality_exp(exp1) / eval_relational_exp(exp2); 
+    }
+
+    return res;
 }
 
 int eval_unary_exp(struct syntax_node *root)
 {
-    return 0;
+    int res = 0;
+
+    if (root->type != SYN_UNARY_EXP) {
+        res = eval_postfix_exp(root);
+    } else {
+        struct token *t = tokens + root->token_idx;
+        struct syntax_node *exp = root->children;
+
+        if (t->type == ADD)
+            res = +eval_equality_exp(exp);
+        else if (t->type == SUB)
+            res = -eval_equality_exp(exp);
+    }
+
+    return res;
 }
 
 int eval_postfix_exp(struct syntax_node *root)
 {
-    return 0;
+    int res = 0;
+
+    if (root->type != SYN_POSTFIX_EXP) {
+        res = eval_primary_exp(root);
+    } else {
+        struct token *t = tokens + root->token_idx;
+
+        struct syntax_node *exp = root->children;
+        struct token *t_id = tokens + exp->token_idx;
+        res = get_record(t_id->literal, t_id->length);
+
+        if (t->type == INC)
+            set_record(t_id->literal, t_id->length, res + 1);
+        else if (t->type == DEC)
+            set_record(t_id->literal, t_id->length, res - 1);
+    }
+
+    return res;
 }
 
 int eval_primary_exp(struct syntax_node *root)
 {
-    return 0;
+    int res = 0;
+    struct token *t = tokens + root->token_idx;
+
+    if (root->type == SYN_ID) {
+        res = get_record(t->literal, t->length);
+    } else if (root->type == SYN_INT_CONST) {
+        char tmp = t->literal[t->length];
+        t->literal[t->length] = '\0';
+
+        res = atoi(t->literal);
+
+        t->literal[t->length] = tmp;
+    }
+
+    return res;
 }
 

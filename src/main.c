@@ -65,7 +65,7 @@ int main(int argc, char const *argv[])
     struct syntax_node *root = generate_ast();
 
     // DEBUG display
-    print_ast(root, 0);
+    // print_ast(root, 0);
 
     scope = enter_scope();
     eval_stat_list(root);
