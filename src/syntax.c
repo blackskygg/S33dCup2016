@@ -185,7 +185,7 @@ struct syntax_node *selection_stat(size_t *idx)
 
     node->children = malloc_node();
     struct syntax_node *cond = node->children;
-    cond->type = SYN_SELECTION_COND;
+    cond->type = SYN_COND;
     cond->token_idx = *idx;
     cond->children = expression(idx);
 
@@ -193,7 +193,7 @@ struct syntax_node *selection_stat(size_t *idx)
 
     cond->sibling = malloc_node();
     struct syntax_node *body = cond->sibling;
-    body->type = SYN_SELECTION_BODY;
+    body->type = SYN_BODY;
     body->token_idx = *idx;
     body->children = stat(idx);
 
@@ -202,7 +202,7 @@ struct syntax_node *selection_stat(size_t *idx)
 
         body->sibling = malloc_node();
         struct syntax_node *else_body = body->sibling;
-        else_body->type = SYN_SELECTION_ELSE;
+        else_body->type = SYN_ELSE;
         else_body->token_idx = *idx;
         else_body->children = stat(idx);
         else_body->sibling = NULL;
@@ -217,17 +217,111 @@ struct syntax_node *selection_stat(size_t *idx)
 
 struct syntax_node *while_stat(size_t *idx)
 {
-    return NULL;
+    struct syntax_node *node = malloc_node();
+    node->type = SYN_WHILE_STAT;
+    node->token_idx = *idx;
+
+    consume(); // while
+    consume(); // (
+
+    node->children = malloc_node();
+    struct syntax_node *cond = node->children;
+    cond->type = SYN_COND;
+    cond->token_idx = *idx;
+    cond->children = expression(idx);
+
+    consume(); // )
+    
+    cond->sibling = malloc_node();
+    struct syntax_node *body = cond->sibling;
+    body->type = SYN_BODY;
+    body->token_idx = *idx;
+    body->children = stat(idx);
+
+    body->sibling = NULL;
+
+    node->sibling = NULL;
+    return node;
 }
 
 struct syntax_node *do_while_stat(size_t *idx)
 {
-    return NULL;
+    struct syntax_node *node = malloc_node();
+    node->type = SYN_DO_WHILE_STAT;
+    node->token_idx = *idx;
+
+    consume(); // do
+
+    node->children = malloc_node();
+    struct syntax_node *body = node->children;
+    body->type = SYN_BODY;
+    body->token_idx = *idx;
+    body->children = stat(idx);
+
+    consume(); // while
+
+    consume(); // (
+    
+    body->sibling = malloc_node();
+    struct syntax_node *cond = body->sibling;
+    cond->type = SYN_COND;
+    cond->token_idx = *idx;
+    cond->children = expression(idx);
+
+    consume(); // )
+
+    cond->sibling = NULL;
+
+    consume(); // ;
+
+    node->sibling = NULL;
+    return node;
 }
 
 struct syntax_node *for_stat(size_t *idx)
 {
-    return NULL;
+    struct syntax_node *node = malloc_node();
+    node->type = SYN_FOR_STAT;
+    node->token_idx = *idx;
+
+    consume(); // for
+    consume(); // (
+
+    node->children = malloc_node();
+    struct syntax_node *bootstrap = node->children;
+    bootstrap->type = SYN_BOOTSTRAP;
+    bootstrap->token_idx = *idx;
+    bootstrap->children = check(DECL) ? init_decl_list(idx) : expression(idx);
+
+    consume(); // ;
+    
+    bootstrap->sibling = malloc_node();
+    struct syntax_node *cond = bootstrap->sibling;
+    cond->type = SYN_COND;
+    cond->token_idx = *idx;
+    cond->children = expression(idx);
+
+    consume(); // ;
+
+    cond->sibling = malloc_node();
+    struct syntax_node *stepin = cond->sibling;
+    stepin->type = SYN_STEPIN;
+    stepin->token_idx = *idx;
+    stepin->children = expression(idx);
+
+    consume(); // )
+
+    stepin->sibling = malloc_node();
+    struct syntax_node *body = stepin->sibling;
+    body->type = SYN_BODY;
+    body->token_idx = *idx;
+    body->children = stat(idx);
+
+    body->sibling = NULL;
+
+    node->sibling = NULL;
+
+    return node;
 }
 
 struct syntax_node *jump_stat(size_t *idx)
