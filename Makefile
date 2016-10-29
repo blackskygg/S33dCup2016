@@ -1,9 +1,10 @@
 CXX=c++
 CFLAGS= -std=c++14 -g
-all: SeedCup
+all: 
+	make -j `getconf _NPROCESSORS_ONLN` SeedCup
 
 clean:
-	rm *.o SeedCup2016.exe
+	rm -rf *.o SeedCup2016.exe *.dSYM
 
 SeedCup : main.cpp parse_stat.o parse_expr.o parser.o lexer.o
 	$(CXX) $(CFLAGS) parse_stat.o parse_expr.o parser.o lexer.o main.cpp -o SeedCup2016.exe

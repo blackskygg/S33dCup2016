@@ -4,18 +4,43 @@
 
 using namespace std;
 
-int Scope::get_identifier(string name)
+int Scope::get_identifier(const string& name)
 {
   unordered_map<string, int>::iterator it;
-  if (vars.end() == (it = vars.find(name)) && (parent != nullptr))
+  if ((vars.end() == (it = vars.find(name))) && (parent != nullptr))
     return parent->get_identifier(name);
   else
     return it->second;
 }
 
-void Scope::set_identifier(string name, int val)
+void Scope::mod_identifier(const string& name, int val)
+{
+  unordered_map<string, int>::iterator it;
+  
+  if ((vars.end() == (it = vars.find(name))) && (parent != nullptr))
+    parent->mod_identifier(name, val);
+  else
+    vars[name] = val;
+}
+
+void Scope::set_identifier(const string& name, int val)
 {
   vars[name] = val;
+}
+
+void Result::add_line(int linum) {
+  cout<< linum << endl;
+  if (linum != prev) {
+    prev = linum;
+    lines.push_back(linum);
+  }
+}
+
+void Result::print()
+{
+  for(auto ln: lines)
+    cout<<ln<<" ";
+  cout<<endl;
 }
 
 int CommaExpr:: eval(Scope& scope)
@@ -86,10 +111,10 @@ int PostfixExpr:: eval(Scope& scope)
   int val = expr->eval(scope);
   string& id = dynamic_pointer_cast<PrimaryExprId>(expr)->id;
   if ("++" == op) {
-    scope.set_identifier(id, val + 1);
+    scope.mod_identifier(id, val + 1);
     return val + 1;
   } else if("--" == op) {
-    scope.set_identifier(id, val - 1);
+    scope.mod_identifier(id, val - 1);
     return val - 1;
   }
 }
@@ -107,22 +132,92 @@ int PrimaryExprId:: eval(Scope& scope)
 int AssignmentExpr::eval(Scope& scope)
 {
   int val = expr->eval(scope);
+
+  scope.mod_identifier(id, val);
   
-  scope.set_identifier(id, val);
   return val;
 }
 
-int DeclStat::execute()
+int InitDecl::eval(Scope& scope)
 {
-  return 0;
+  int val = expr->eval(scope);
+
+  scope.set_identifier(id, val);
+  
+  return val;
 }
 
-int CompoundStat::execute()
+void DeclStat::execute(Result& result)
+{
+  if (has_init)
+    result.add_line(linum);
+  
+  for (auto e: decl_list)
+    e.eval(*scope);
+}
+
+void SelectStat::execute(Result& result)
+{
+  result.add_line(linum);
+  if (expr->eval(*scope)) {
+    stat1->execute(result);
+  } else {
+    stat2->execute(result);
+  }
+}
+
+void ForStat::execute(Result& result)
+{
+  if (has_decl)
+    decl.execute(result);
+  else
+    expr[1]->eval(*scope);
+
+  for (result.add_line(linum);
+       result.add_line(linum), expr[2]->eval(*scope);
+       expr[3]->eval(*scope)) {
+    stat->execute(result);
+  }
+}
+
+void WhileStat::execute(Result& result)
+{
+  while(result.add_line(linum), expr->eval(*scope)) {
+    stat->execute(result);
+  }
+}
+
+void DoStat::execute(Result& result)
+{
+  do {
+    stat->execute(result);
+    result.add_line(linum);
+  } while(expr->eval(*scope));
+}
+
+void BreakStat::execute(Result& result)
+{
+  result.add_line(linum);
+}
+
+void PrintStat::execute(Result& result)
+{
+  result.add_line(linum);
+  expr->eval(*scope);
+}
+
+void ExprStat::execute(Result& result)
+{
+  if (!is_empty) {
+    result.add_line(linum);
+    expr->eval(*scope);
+  }
+}
+
+void CompoundStat::execute(Result& result)
 {
   for (auto stat: stat_list)
-    stat->execute();
-   
-  return 0;
+    stat->execute(result);
 }
 
 Parser::Parser(vector <Token> &tokens): tokens(tokens)
@@ -163,10 +258,10 @@ Parser::Parser(vector <Token> &tokens): tokens(tokens)
   expr_tpls.push_back(make_pair(Expression::ASSIGNMENT, expr_regex("(.+?)=(.+)")));
   expr_tpls.push_back(make_pair(Expression::EQUALITY, expr_regex("(.+)([!e])(.+)")));
   expr_tpls.push_back(make_pair(Expression::RELATIONAL, expr_regex("(.+)([gl><])(.+)")));
-  expr_tpls.push_back(make_pair(Expression::ADDITIVE, expr_regex("(.+)([\\+-])(.+)")));
+  expr_tpls.push_back(make_pair(Expression::ADDITIVE, expr_regex("(.*[\\^vnas])([\\+-])(.+)")));
   expr_tpls.push_back(make_pair(Expression::MULT, expr_regex("(.+)([\\*/])(.+)")));
   expr_tpls.push_back(make_pair(Expression::UNARY, expr_regex("[\\+-](.+)")));
-  expr_tpls.push_back(make_pair(Expression::POSTFIX, expr_regex("(.+)[\\^v]")));
+  expr_tpls.push_back(make_pair(Expression::POSTFIX, expr_regex("(.+)([\\^v])")));
   expr_tpls.push_back(make_pair(Expression::PRIMARY, expr_regex("([nas])")));
 }
 
@@ -177,13 +272,14 @@ void Parser::encode_tokens(std::vector <Token>& tokens, string &s)
 }
 
 
-int Parser::parse(vector< shared_ptr<Statement> >& stats)
+void Parser::parse(Result& result)
 {
   string s;
-  shared_ptr<Scope> global_scp;
-
+  shared_ptr<Scope> global_scp = make_shared<Scope>();
+  CompoundStat stat(global_scp, 1);
+  
   encode_tokens(tokens, s);
-  parse_stat_list(s.cbegin(), s.cend(), 0, stats, global_scp);
 
-  return 0;
+  parse_stat_list(s.cbegin(), s.cend(), 0, stat.stat_list, global_scp);
+  stat.execute(result);
 }

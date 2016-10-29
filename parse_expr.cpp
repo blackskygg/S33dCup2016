@@ -25,12 +25,13 @@ void Parser::parse_expr(string::const_iterator str_begin,
   parse_expr(m[(n)].first, m[(n)].second, POS(n), expr);
 #define PARSE_BIN(var)			\
   var->op = tokens[POS(2)].code;	\
-  cout<< "op: " << var->op <<endl;	\
   PARSE_EXPR(1, var->expr1);		\
-  PARSE_EXPR(3, var->expr1);		
+  PARSE_EXPR(3, var->expr2);		
 
-  cout << "expr: " << string(str_begin, str_end) << endl;
-  cout << "expr_type: " << type << endl;
+  //  cout<< "op: " << var->op <<endl;	
+
+  //  cout << "expr: " << string(str_begin, str_end) << endl;
+  //  cout << "expr_type: " << type << endl;
   switch (type) {
   case Expression::COMMA:
     {
@@ -97,7 +98,7 @@ void Parser::parse_expr(string::const_iterator str_begin,
       shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst> \
 	(atoi(tokens[POS(1)].code.c_str()));
       expr = dynamic_pointer_cast<Expression>(prim_ptr);
-    } else  if (m[0].str() == "n") {
+    } else  if (m[0].str() == "s") {
       shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst>(0);
       expr = dynamic_pointer_cast<Expression>(prim_ptr);
     } else {
