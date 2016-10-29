@@ -240,7 +240,7 @@ struct syntax_node *expression(size_t *idx)
 struct syntax_node *assignment_exp(size_t *idx)
 {
     if (tokens[*idx].type != ID || tokens[*idx + 1].type != ASSIGN)
-        return equality_exp(idx);
+        return rotate_exp(equality_exp(idx));
 
     struct syntax_node *node = malloc_node();
     node->type = SYN_ASSIGNMENT_EXP;
@@ -255,12 +255,12 @@ struct syntax_node *assignment_exp(size_t *idx)
     return node;
 }
 
-struct syntax_node *equality_exp(size_t *idx)
+struct syntax_node *equality_exp(size_t *idx) // L_comb
 {
     struct syntax_node *node = malloc_node();
 
     node->type = SYN_EQUALITY_EXP;
-    node->children = relational_exp(idx);
+    node->children = rotate_exp(relational_exp(idx));
     node->token_idx = *idx;
 
     if (check(EQ) || check(NE)) {
@@ -277,12 +277,12 @@ struct syntax_node *equality_exp(size_t *idx)
     }
 }
 
-struct syntax_node *relational_exp(size_t *idx)
+struct syntax_node *relational_exp(size_t *idx) // L_comb
 {
     struct syntax_node *node = malloc_node();
 
     node->type = SYN_RELATIONAL_EXP;
-    node->children = additive_exp(idx);
+    node->children = rotate_exp(additive_exp(idx));
     node->token_idx = *idx;
 
     if (check(GT) || check(LT) || check(GE) || check(LE)) {
@@ -300,12 +300,12 @@ struct syntax_node *relational_exp(size_t *idx)
 }
 
 
-struct syntax_node *additive_exp(size_t *idx)
+struct syntax_node *additive_exp(size_t *idx) // L_comb
 {
     struct syntax_node *node = malloc_node();
 
     node->type = SYN_ADDITIVE_EXP;
-    node->children = mult_exp(idx);
+    node->children = rotate_exp(mult_exp(idx));
     node->token_idx = *idx;
 
     if (check(ADD) || check(SUB)) {
@@ -322,7 +322,7 @@ struct syntax_node *additive_exp(size_t *idx)
     }
 }
 
-struct syntax_node *mult_exp(size_t *idx)
+struct syntax_node *mult_exp(size_t *idx) // L_comb
 {
     struct syntax_node *node = malloc_node();
 
@@ -409,4 +409,21 @@ struct syntax_node *primary_exp(size_t *idx)
         node->sibling = NULL;
     }
     return node;
+}
+
+struct syntax_node *rotate_exp(struct syntax_node *root)
+{
+    if (!root->children)
+        return root;
+    struct syntax_node *left = root->children->sibling;
+    if (left == NULL || left->type != root->type) {
+        return root;
+    } else {
+        struct syntax_node *tmp = left->children;
+        left->children = root;
+        root->sibling = tmp->sibling;
+        tmp->sibling = NULL;
+        root->children->sibling = tmp;
+        return rotate_exp(left);
+    }
 }

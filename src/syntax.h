@@ -65,4 +65,7 @@ struct syntax_node *unary_exp(size_t *idx);
 struct syntax_node *postfix_exp(size_t *idx);
 struct syntax_node *primary_exp(size_t *idx);
 
+// fix l-comb exps' ast
+struct syntax_node *rotate_exp(struct syntax_node *root);
+
 #endif
