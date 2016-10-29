@@ -1,6 +1,6 @@
 int i = 1, b = 6;
 
-i = b---i;
+i = -i- -b---i+i+-i- -i;
 
 if (i == 5) {
   printf("yes");
