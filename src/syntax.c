@@ -590,3 +590,7 @@ struct syntax_node *rotate_exp(struct syntax_node *root)
         return rotate_exp(left);
     }
 }
+
+#undef check
+#undef consume
+#undef malloc_node
