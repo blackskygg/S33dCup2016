@@ -39,8 +39,9 @@ int main(int argc, char *argv[])
     token.print();
 
   Parser parser(tokens);
-  vector<shared_ptr<Statement> > stats;
-  parser.parse(stats);
+  Result result;
+  parser.parse(result);
+  result.print();
 
   delete[] buf;
   

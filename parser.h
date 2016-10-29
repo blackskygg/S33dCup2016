@@ -20,12 +20,23 @@ class Scope {
  public:
   Scope() {parent = nullptr;}; 
   Scope(std::shared_ptr<Scope> parent) : parent(parent) {};
-  int get_identifier(std::string name);
-  void set_identifier(std::string name, int val);
+  int get_identifier(const std::string& name);
+  void set_identifier(const std::string& name, int val);
+  void mod_identifier(const std::string& name, int val);
 
  private:
   std::shared_ptr<Scope> parent;
   std::unordered_map<std::string, int> vars;
+};
+
+class Result {
+ public:
+  void add_line(int linum);
+  void print();
+
+ private:
+  std::vector<int> lines;
+  int prev = -1;
 };
 
 class Expression{
@@ -146,24 +157,33 @@ class Statement {
 
   Statement() = default;
   Statement(std::shared_ptr<Scope> scope, int linum): scope(scope), linum(linum) {};
-  int execute() {};
+  virtual void execute(Result& lines) = 0;
 
   std::shared_ptr<Scope> scope;
   int linum;
 };
 
+class InitDecl: public Expression {
+ public:
+  int eval(Scope &scope);
+
+  std::string id;
+  std::shared_ptr<Expression> expr;
+};
+
 class DeclStat: public Statement {
  public:
   DeclStat(std::shared_ptr<Scope> scope, int linum): Statement(scope, linum) {};
-  int execute();
+  void execute(Result &result);
 
-  std::vector<AssignmentExpr> decl_list;
+  bool has_init = false;
+  std::vector<InitDecl> decl_list;
 };
 
 class CompoundStat: public Statement {
  public:
   CompoundStat(std::shared_ptr<Scope> scope, int linum): Statement(scope, linum) {};
-  int execute();
+  void execute(Result &result);
   
   std::vector< std::shared_ptr<Statement> > stat_list;
 };
@@ -171,7 +191,7 @@ class CompoundStat: public Statement {
 class SelectStat: public Statement {
  public:
   SelectStat(std::shared_ptr<Scope> scope, int linum): Statement(scope, linum) {};
-  int execute();
+  void execute(Result &result);
 
   std::shared_ptr<Expression> expr;
   std::shared_ptr<Statement> stat1;
@@ -180,9 +200,12 @@ class SelectStat: public Statement {
 
 class ForStat: public Statement {
  public:
-  ForStat(std::shared_ptr<Scope> scope, int linum): Statement(scope, linum) {};
-  int execute();
+ ForStat(std::shared_ptr<Scope> scope, int linum):
+  Statement(scope, linum), decl(scope, linum) {};
+  void execute(Result &result);
 
+  bool has_decl = false;
+  DeclStat decl;
   std::shared_ptr<Expression> expr[3];
   std::shared_ptr<Statement> stat;
 };
@@ -190,7 +213,7 @@ class ForStat: public Statement {
 class WhileStat: public Statement {
  public:
   WhileStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum) {};
-  int execute();
+  void execute(Result &result);
 
   std::shared_ptr<Expression> expr;
   std::shared_ptr<Statement> stat;
@@ -199,13 +222,13 @@ class WhileStat: public Statement {
 class BreakStat: public Statement {
  public:
   BreakStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum) {};
-  int execute();
+  void execute(Result &result);
 };
 
 class DoStat: public Statement {
  public:
   DoStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum) {};
-  int execute();
+  void execute(Result &result);
 
   std::shared_ptr<Expression> expr;
   std::shared_ptr<Statement> stat;
@@ -214,7 +237,7 @@ class DoStat: public Statement {
 class PrintStat: public Statement {
  public:
   PrintStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum){};
-  int execute();
+  void execute(Result &result);
 
   std::shared_ptr<Expression> expr;
 };
@@ -222,7 +245,7 @@ class PrintStat: public Statement {
 class ExprStat : public Statement {
  public:
  ExprStat(std::shared_ptr<Scope> scope, int linum) : Statement(scope, linum) {};
-  int execute();
+  void execute(Result &result);
   
   std::shared_ptr<Expression> expr;
 };
@@ -234,7 +257,7 @@ class ExprStat : public Statement {
 class Parser {
  public:
   Parser(std::vector <Token> &tokens);
-  int parse(std::vector<std::shared_ptr<Statement> >& stats);
+  void parse(Result& result);
   
  private:
   void parse_expr(std::string::const_iterator begin,
@@ -244,7 +267,7 @@ class Parser {
   void parse_init_decl(std::string::const_iterator begin,
 			 std::string::const_iterator end,
 			 size_t origin,
-			 AssignmentExpr& expr);
+			 InitDecl& decl);
   void parse_stat_list(std::string::const_iterator begin,
 		   std::string::const_iterator end,
 		   size_t origin,
