@@ -8,16 +8,11 @@
 #include <memory>
 #include <unordered_map>
 #include <iostream>
-#include <unordered_set>
+#include <fstream>
 #include "lexer.h"
 
-using namespace std;
-
-class Identifier {
- public:
-  std::string name;
-  int val;
-};
+using std::cout;
+using std::endl;
 
 class Scope {
  public:
@@ -37,7 +32,7 @@ class Scope {
 class Result {
  public:
   void add_line(int linum);
-  void print();
+  void print(std::ofstream& ofs);
 
  private:
   std::vector<int> lines;
@@ -301,17 +296,15 @@ class ForStat: public Statement {
   void execute(Result &result, Scope& scope);
   void print() {
     cout << "For: " << endl;
-    if (has_decl)
-      decl.print();
-    else
-      expr[0]->print();
+    if (has_decl) decl.print();
+    else expr[0]->print();
     cout<<"ForExpr1"<<endl;
     expr[1]->print();
     cout<<"ForExpr2"<<endl;
     expr[2]->print();
     cout<<"ForStat2"<<endl;
     stat->print();
-    cout<<endl<<"ForEnd"<<endl;
+    cout<<"ForEnd"<<endl;
   };
 
   bool has_decl = false;
@@ -388,17 +381,6 @@ class ExprStat : public Statement {
 };
 
 
-#define stat_regex(s) regex(s)
-#define expr_regex(s) regex(s)
-
-#define PARSER_NAME(fn)       parse_##fn##_stat
-#define STAT_PARSER_PROTO(T, fn)				\
-  std::string::const_iterator					\
-    PARSER_NAME(fn)(std::string::const_iterator str_begin,	\
-		      std::string::const_iterator str_end,	\
-		      size_t origin,				\
-		      T& stat)
-
 class Parser {
  public:
   Parser(std::vector <Token> &tokens);
@@ -415,6 +397,13 @@ class Parser {
 			 size_t origin,
 			 InitDecl& decl);
 
+#define PARSER_NAME(fn)       parse_##fn##_stat
+#define STAT_PARSER_PROTO(T, fn)				\
+  std::string::const_iterator					\
+    PARSER_NAME(fn)(std::string::const_iterator str_begin,	\
+		      std::string::const_iterator str_end,	\
+		      size_t origin,				\
+		      T& stat)
   STAT_PARSER_PROTO(CompoundStat, comp);
   STAT_PARSER_PROTO(DeclStat, decl);
   STAT_PARSER_PROTO(SelectStat, select);
@@ -424,6 +413,8 @@ class Parser {
   STAT_PARSER_PROTO(DoStat, do);
   STAT_PARSER_PROTO(PrintStat, print);
   STAT_PARSER_PROTO(ExprStat, expr);
+#undef STAT_PARSER_PROTO
+
 
   std::string::const_iterator
     parse_stat(std::string::const_iterator begin,
@@ -440,11 +431,9 @@ class Parser {
   void encode_tokens(std::vector <Token>& tokens, std::string &s);
 
 
-  std::vector< std::pair<Statement::StatType, std::regex> > stat_tpls;
   std::vector< std::pair<Expression::ExprType, std::regex> > expr_tpls;
   char code_map[256];
   std::vector <Token> &tokens;
-
 };
 
 #endif

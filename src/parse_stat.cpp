@@ -6,6 +6,10 @@ using namespace std;
 
 /* below are macros used only in this file */
 
+/*Statment parsers, parse the string(str_begin, str_end) for a statement
+  and return an iterator pointing to the rest of the string.
+  Origin is the position of the current leading token.
+*/
 #define STAT_PARSER(T, fn)					\
   string::const_iterator					\
   Parser::PARSER_NAME(fn)(string::const_iterator str_begin,	\
@@ -17,17 +21,11 @@ using namespace std;
 #define MK_ORIGIN(it) auto _str_origin = it
 #define POS(it) ((it) - _str_origin + origin)
 
-
-
-/*Statment parsers, parse the string(str_begin, str_end) for a statement
-  and return an iterator pointing to the rest of the string.
-  Origin is the position of the current leading token.
-*/
-
-void Parser::parse_init_decl(string::const_iterator str_begin,
-			     string::const_iterator str_end,
-			     size_t origin,
-			     InitDecl& decl) 
+void
+Parser::parse_init_decl(string::const_iterator str_begin,
+			string::const_iterator str_end,
+			size_t origin,
+			InitDecl& decl) 
 {
   smatch m;
   decl.id = tokens[origin].code;
@@ -56,17 +54,14 @@ STAT_PARSER(DeclStat, decl)
       parse_init_decl(m[0].first, m[0].second,
 		      POS(m[0].first), decl_expr);
       stat.decl_list.push_back(decl_expr);
-
     } else if('a' == *str_begin) {
       len = 1;
       decl_expr.id = tokens[POS(str_begin)].code;
       decl_expr.expr = dynamic_pointer_cast<Expression>	
 	(make_shared<PrimaryExprConst>(0));
       stat.decl_list.push_back(decl_expr);
-      
     } else if(',' == *str_begin) {
       len = 1;
-      
     } else if(';' == *str_begin) {
       len = 1;
       end = true;
@@ -80,10 +75,11 @@ STAT_PARSER(DeclStat, decl)
   return str_begin; 
 }
 
-string::const_iterator Parser::parse_stat_list(string::const_iterator str_begin,
-					       string::const_iterator str_end,
-					       size_t origin,
-					       vector< shared_ptr<Statement> >& stats)
+string::const_iterator
+Parser::parse_stat_list(string::const_iterator str_begin,
+			string::const_iterator str_end,
+			size_t origin,
+			vector< shared_ptr<Statement> >& stats)
 {
   shared_ptr<Statement> stat_ptr;
 
@@ -161,6 +157,7 @@ STAT_PARSER(ForStat, for)
   if (*str_begin == 'i') {
     stat.has_decl = true;
     str_begin = parse_decl_stat(str_begin, str_end, POS(str_begin), stat.decl);
+
   } else {
     regex_search(str_begin, str_end, m, regex("(.*?)[;\\)]"),
 		 regex_constants::match_continuous);
@@ -184,17 +181,15 @@ STAT_PARSER(WhileStat, while)
   MK_ORIGIN(str_begin);
   
   str_begin += 2;
-  regex_search(str_begin, str_end, m, regex("(.+?)\\)"), regex_constants::match_continuous);
+  regex_search(str_begin, str_end, m, regex("(.+?)\\)"),
+	       regex_constants::match_continuous);
   parse_expr(m[1].first, m[1].second, POS(m[1].first), stat.expr);
 
   str_begin = m[0].second;
   return parse_stat(str_begin, str_end, POS(str_begin), stat.stat);
 }
 
-STAT_PARSER(BreakStat, break)
-{
-  return str_begin + 2;
-}
+STAT_PARSER(BreakStat, break) { return str_begin + 2; }
 
 STAT_PARSER(DoStat, do)
 {
@@ -206,7 +201,8 @@ STAT_PARSER(DoStat, do)
   str_begin = parse_stat(str_begin, str_end, POS(str_begin), stat.stat);
 
   str_begin += 2;
-  regex_search(str_begin, str_end, m, regex("(.+?)\\);"), regex_constants::match_continuous);
+  regex_search(str_begin, str_end, m, regex("(.+?)\\);"),
+	       regex_constants::match_continuous);
   parse_expr(m[1].first, m[1].second, POS(m[1].first), stat.expr);
   stat.linum = tokens[POS(m[1].first)].linum;
 
@@ -220,11 +216,10 @@ STAT_PARSER(ExprStat, expr)
 
   MK_ORIGIN(str_begin);
 
-  //ExprStat could be empty
-  if (';' == *str_begin)
-    return str_begin + 1;
-  
-  regex_search(str_begin, str_end, m, regex("(.*?);"), regex_constants::match_continuous);
+  if(';' == *str_begin)
+    stat.is_empty = true;
+  regex_search(str_begin, str_end, m, regex("(.*?);"),
+	       regex_constants::match_continuous);
   parse_expr(m[1].first, m[1].second, POS(m[1].first), stat.expr);
     
   return m[0].second;
@@ -233,10 +228,11 @@ STAT_PARSER(ExprStat, expr)
 #undef STAT_PARSR
 
 
-string::const_iterator Parser::parse_stat(string::const_iterator str_begin,
-					  string::const_iterator str_end,
-					  size_t origin,
-					  shared_ptr<Statement>& stat_ptr)
+string::const_iterator
+Parser::parse_stat(string::const_iterator str_begin,
+		   string::const_iterator str_end,
+		   size_t origin,
+		   shared_ptr<Statement>& stat_ptr)
 {
   if (str_begin == str_end)
     return str_begin;
@@ -269,7 +265,7 @@ string::const_iterator Parser::parse_stat(string::const_iterator str_begin,
     break;
   case 'b': PARSE_STAT(BreakStat, break);
     break;
-  default: PARSE_STAT(ExprStat, expr);
+  default : PARSE_STAT(ExprStat, expr);
     break;
   }
 

@@ -6,10 +6,6 @@
 #include <regex>
 #include <utility>
 
-
-#define token_regex(s) regex(s)
-
-
 class Token {
 public:
 
@@ -56,14 +52,12 @@ public:
     STRING_LITERAL = 93,
   } TokenType;
   
- Token(TokenType type, int linum, std::string code, std::pair<int, int> span):
-  type(type), linum(linum), code(code), begin(span.first), end(span.second) {};
+ Token(TokenType type, int linum, std::string code):
+  type(type), linum(linum), code(code) {};
   void print();
 
   TokenType type;
   int linum;
-  size_t begin;
-  size_t end;
   std::string code;
 };
 
@@ -71,11 +65,11 @@ class Lexer {
 public:
   Lexer();
   int scan(std::string s, std::vector<Token>& result);
-private:
-  std::vector< std::pair<Token::TokenType, std::regex> > tokenTpls;
-  
 
+private:
   int count_crlf(std::string s);
+
+  std::vector< std::pair<Token::TokenType, std::regex> > token_tpls;
 };
 
 #endif

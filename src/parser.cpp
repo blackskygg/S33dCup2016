@@ -1,12 +1,11 @@
 #include "parser.h"
-#include <iostream>
-#include <cstdlib>
 
 using namespace std;
 
 int Scope::get_identifier(const string& name)
 {
   unordered_map<string, int>::iterator it;
+
   if ((vars.end() == (it = vars.find(name))) && (parent != NULL))
     return parent->get_identifier(name);
   else
@@ -29,18 +28,19 @@ void Scope::set_identifier(const string& name, int val)
 }
 
 void Result::add_line(int linum) {
-  cout<< linum << endl;
   if (linum != prev) {
     prev = linum;
     lines.push_back(linum);
   }
 }
 
-void Result::print()
+void Result::print(ofstream& ofs)
 {
+  int n = lines.back();
+  lines.pop_back();
   for(auto ln: lines)
-    cout<<ln<<" ";
-  cout<<endl;
+    ofs << ln << " ";
+  ofs << n << endl;
 }
 
 int CommaExpr:: eval(Scope& scope)
@@ -62,67 +62,47 @@ int RelationalExpr:: eval(Scope& scope)
 {
   int val1 = expr1->eval(scope), val2 = expr2->eval(scope);
 
-  if (">=" == op) {
-    return val1 >= val2 ? 1 : 0;
-  } else if("<=" == op) {
-    return val1 <= val2 ? 1 : 0;
-  } else if(">" == op) {
-    return val1 > val2 ? 1 : 0;
-  } else if("<" == op) {
-    return val1 < val2 ? 1 : 0;
-  } else {
-    return -1;
-  }
+  if (">=" == op) return val1 >= val2 ? 1 : 0;
+  else if("<=" == op) return val1 <= val2 ? 1 : 0;
+  else if(">" == op) return val1 > val2 ? 1 : 0;
+  else if("<" == op) return val1 < val2 ? 1 : 0;
+  else return -1;
 }
 
 int AdditiveExpr:: eval(Scope& scope)
 {
   int val1 = expr1->eval(scope), val2 = expr2->eval(scope);
 
-  if ("+" == op) {
-    return val1 + val2;
-  } else if("-" == op) {
-    return val1 - val2;
-  } else {
-    return -1;
-  }
+  if ("+" == op) return val1 + val2;
+  else if("-" == op) return val1 - val2;
+  else return -1;
 }
 
 int MultExpr:: eval(Scope& scope)
 {
   int val1 = expr1->eval(scope), val2 = expr2->eval(scope);
 
-  if ("*" == op) {
-    return val1 * val2;
-  } else if("/" == op) {
-    return val1 / val2;
-  } else {
-    return -1;
-  }
+  if ("*" == op) return val1 * val2;
+  else if("/" == op) return val1 / val2;
+  else return -1;
 }
 
 int UnaryExpr:: eval(Scope& scope)
 {
   int val = expr->eval(scope);
 
-  if ("-" == op) {
-    return -val;
-  } else if("+" == op) {
-    return val;
-  } else {
-    return -1;
-  }
+  if ("-" == op) return -val;
+  else if("+" == op) return val;
+  else return -1;
 }
 
 int PostfixExpr:: eval(Scope& scope)
 {
   int val = expr->eval(scope);
   string& id = dynamic_pointer_cast<PrimaryExprId>(expr)->id;
-  if ("++" == op) {
-    scope.mod_identifier(id, val + 1);
-  } else if("--" == op) {
-    scope.mod_identifier(id, val - 1);
-  }
+
+  if ("++" == op) scope.mod_identifier(id, val + 1);
+  else if("--" == op) scope.mod_identifier(id, val - 1);
 
   return val;
 }
@@ -157,8 +137,7 @@ int InitDecl::eval(Scope& scope)
 
 void DeclStat::execute(Result& result, Scope& scope)
 {
-  if (has_init)
-    result.add_line(linum);
+  if (has_init) result.add_line(linum);
   
   for (auto e: decl_list)
     e.eval(scope);
@@ -167,29 +146,22 @@ void DeclStat::execute(Result& result, Scope& scope)
 void SelectStat::execute(Result& result, Scope& scope)
 {
   result.add_line(linum);
-  if (expr->eval(scope)) {
-    stat1->execute(result, scope);
-  } else if (has_else) {
-    stat2->execute(result, scope);
-  }
+  if (expr->eval(scope)) stat1->execute(result, scope);
+  else if (has_else) stat2->execute(result, scope);
 }
 
 void ForStat::execute(Result& result, Scope& scope)
 {
   Scope new_scp(&scope);
   
-  if (has_decl)
-    decl.execute(result, new_scp);
-  else
-    expr[0]->eval(new_scp);
+  if (has_decl) decl.execute(result, new_scp);
+  else expr[0]->eval(new_scp);
 
   result.add_line(linum);
-
   while (result.add_line(linum), expr[1]->eval(new_scp)) {
     stat->execute(result, new_scp);
-    if (new_scp.break_flag) {
-      break;
-    }
+    if (new_scp.break_flag) break;
+    
     result.add_line(linum), expr[2]->eval(new_scp);
   }
 }
@@ -282,15 +254,17 @@ Parser::Parser(vector <Token> &tokens): tokens(tokens)
   code_map[Token::SEMICOLON] = ';';
   code_map[Token::STRING_LITERAL] = 's';
 
-  expr_tpls.push_back(make_pair(Expression::COMMA, expr_regex("(.+),(.+)")));
-  expr_tpls.push_back(make_pair(Expression::ASSIGNMENT, expr_regex("(.+?)=(.+)")));
-  expr_tpls.push_back(make_pair(Expression::EQUALITY, expr_regex("(.+)([!e])(.+)")));
-  expr_tpls.push_back(make_pair(Expression::RELATIONAL, expr_regex("(.+)([gl><])(.+)")));
-  expr_tpls.push_back(make_pair(Expression::ADDITIVE, expr_regex("(.*[\\^vnas])([\\+-])(.+)")));
-  expr_tpls.push_back(make_pair(Expression::MULT, expr_regex("(.+)([\\*/])(.+)")));
-  expr_tpls.push_back(make_pair(Expression::UNARY, expr_regex("([\\+-])(.+)")));
-  expr_tpls.push_back(make_pair(Expression::POSTFIX, expr_regex("(.+)([\\^v])")));
-  expr_tpls.push_back(make_pair(Expression::PRIMARY, expr_regex("([nas])")));
+#define EXPR_TPL(T, R) expr_tpls.push_back(make_pair(Expression::T, regex(R)))
+  EXPR_TPL(COMMA, "(.+),(.+)");
+  EXPR_TPL(ASSIGNMENT, "(.+?)=(.+)");
+  EXPR_TPL(EQUALITY, "(.+)([!e])(.+)");
+  EXPR_TPL(RELATIONAL, "(.+)([gl><])(.+)");
+  EXPR_TPL(ADDITIVE, "(.*[\\^vnas])([\\+-])(.+)");
+  EXPR_TPL(MULT, "(.+)([\\*/])(.+)");
+  EXPR_TPL(UNARY, "([\\+-])(.+)");
+  EXPR_TPL(POSTFIX, "(.+)([\\^v])");
+  EXPR_TPL(PRIMARY, "([nas])");
+#undef EXPR_TPL
 }
 
 void Parser::encode_tokens(std::vector <Token>& tokens, string &s)

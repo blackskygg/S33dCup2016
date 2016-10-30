@@ -1,6 +1,4 @@
 #include "parser.h"
-#include <iostream>
-#include <cstdlib>
 
 using namespace std;
 
@@ -14,10 +12,11 @@ void Parser::parse_expr(string::const_iterator str_begin,
 
   for (auto tpl: expr_tpls) {
     if (regex_search(str_begin, str_end, m, tpl.second,
-		     regex_constants::match_continuous)) {
-      type = tpl.first;
-      break;
-    }
+		     regex_constants::match_continuous))
+      {
+	type = tpl.first;
+	break;
+      }
   }
 
 #define POS(n)	(m[(n)].first - str_begin + origin)
@@ -28,10 +27,6 @@ void Parser::parse_expr(string::const_iterator str_begin,
   PARSE_EXPR(1, var->expr1);		\
   PARSE_EXPR(3, var->expr2);		
 
-  //  cout<< "op: " << var->op <<endl;	
-
-  cout << "expr: " << string(str_begin, str_end) << endl;
-  cout << "expr_type: " << type << endl;
   switch (type) {
   case Expression::COMMA:
     {
@@ -98,9 +93,6 @@ void Parser::parse_expr(string::const_iterator str_begin,
       shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst> \
 	(atoi(tokens[POS(1)].code.c_str()));
       expr = dynamic_pointer_cast<Expression>(prim_ptr);
-    } else  if (m[0].str() == "s") {
-      shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst>(1);
-      expr = dynamic_pointer_cast<Expression>(prim_ptr);
     } else if (m[1].str() == "a"){
       shared_ptr<PrimaryExprId> prim_ptr = make_shared<PrimaryExprId>	\
 	(tokens[POS(1)].code);
@@ -111,11 +103,6 @@ void Parser::parse_expr(string::const_iterator str_begin,
     }
     break;
   default:
-    {
-      shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst>(1);
-      expr = dynamic_pointer_cast<Expression>(prim_ptr);
-      cout <<" Expression reached default "<<endl;
-    }
     break;
   }
 
