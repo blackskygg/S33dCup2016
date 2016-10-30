@@ -24,41 +24,35 @@ void ForStat::execute(Result& result, Scope& scope)
   if (has_decl) decl.execute(result, new_scp);
   else expr[0]->eval(new_scp);
 
-  result.add_line(linum);
-  while (result.add_line(linum), expr[1]->eval(new_scp)) {
-    stat->execute(result, new_scp);
-    if (new_scp.break_flag) break;
-    
-    result.add_line(linum), expr[2]->eval(new_scp);
-  }
+  for (result.add_line(linum);
+       result.add_line(linum), expr[1]->eval(new_scp);
+       result.add_line(linum), expr[2]->eval(new_scp))
+    {
+      try { stat->execute(result, new_scp); }
+      catch (BreakException e) { break; }
+    }
 }
 
 void WhileStat::execute(Result& result, Scope& scope)
 {
   while(result.add_line(linum), expr->eval(scope)) {
-    stat->execute(result, scope);
-    if (scope.break_flag) {
-      scope.break_flag = false;
-      break;
-    }
+    try { stat->execute(result, scope); }
+    catch (BreakException e) { break; }
   }
 }
 
 void DoStat::execute(Result& result, Scope& scope)
 {
   do {
-    stat->execute(result, scope);
-    if (scope.break_flag) {
-      scope.break_flag = false;
-      break;
-    }
+    try { stat->execute(result, scope); }
+    catch (BreakException e) { break; }
   } while(result.add_line(linum), expr->eval(scope));
 }
 
 void BreakStat::execute(Result& result, Scope& scope)
 {
-  scope.break_flag = true;
   result.add_line(linum);
+  throw BreakException();
 }
 
 void PrintStat::execute(Result& result, Scope& scope)
@@ -79,10 +73,7 @@ void CompoundStat::execute(Result& result, Scope& scope)
 {
   Scope new_scp(&scope);
   for (auto stat: stat_list) {
+    //this might throw an exception, but we leave it to the IterStats
     stat->execute(result, new_scp);
-    if (new_scp.break_flag) {
-      scope.break_flag = true;
-      break;
-    }
   }
 }

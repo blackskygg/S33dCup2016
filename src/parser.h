@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <fstream>
+#include <exception>
 #include "lexer.h"
 
 using std::cout;
@@ -21,8 +22,6 @@ class Scope {
   int get_identifier(const std::string& name);
   void set_identifier(const std::string& name, int val);
   void mod_identifier(const std::string& name, int val);
-
-  bool break_flag = false;
 
  private:
   Scope* parent = nullptr;
@@ -214,6 +213,8 @@ class Statement {
     JUMP_STAT = 6,
     PRINT_STAT = 7,
   }StatType;
+
+  class BreakException : public std::exception {};
 
   Statement() = default;
   Statement(int linum): linum(linum) {};
