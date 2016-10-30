@@ -148,11 +148,10 @@ int eval_init_decl(struct syntax_node *root)
 
 int eval_exp_stat(struct syntax_node *root)
 {
-    if (root->children) {
+    if (root->children)
         return eval_expression(root->children);
-    } else {
+    else
         return 0;
-    }
 }
 
 int eval_compound_stat(struct syntax_node *root)

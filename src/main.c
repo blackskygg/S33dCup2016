@@ -59,9 +59,9 @@ int main(int argc, char const *argv[])
     // DEBUG display
     print_ast(root, 0);
 
-    enter_scope(); // 全局就是一个作用域
+    enter_scope();  // 全局就是一个作用域
     eval_stat_list(root);
-    leave_scope(); // 离开全局作用域
+    leave_scope();  // 离开全局作用域
 
     fclose(fout);
 

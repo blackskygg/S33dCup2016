@@ -6,7 +6,8 @@
 #include "parser.h"
 
 struct scope_record {
-    char *					key;                    // NULL key represents scope sentinel
+    // NULL key represents scope sentinel
+    char *					key;
     size_t					len;
     int						val;
     struct scope_record *	prev;
