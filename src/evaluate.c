@@ -5,8 +5,6 @@
 
 #include "lexer.h"
 
-// #define DEBUG
-
 FILE *fout;
 
 int prev_line = 0;
@@ -14,6 +12,20 @@ struct scope_record *scope = NULL;
 int break_flag = 0;
 
 #define malloc_record() ((struct scope_record *)malloc(sizeof(struct scope_record)))
+
+void print_line(struct syntax_node *node)
+{
+    size_t line = tokens[node->token_idx].line;
+
+    printf("called at line : %ld\n", line);
+
+    if (line != prev_line) {
+        if (prev_line)
+            fputc(' ', fout);
+        fprintf(fout, "%ld", line);
+        prev_line = line;
+    }
+}
 
 void enter_scope()
 {
@@ -139,7 +151,7 @@ int eval_init_decl(struct syntax_node *root)
     struct token *t = tokens + root->children->token_idx;
     char *key = t->literal;
     size_t len = t->length;
-    int val = root->children->sibling ? eval_expression(root->children->sibling) : 0;
+    int val = root->children->sibling ? eval_assignment_exp(root->children->sibling) : 0;
 
     scope = new_record(key, len, val);
 
@@ -218,27 +230,15 @@ int eval_for_stat(struct syntax_node *root)
     struct syntax_node *body = stepin->sibling;
 
     enter_scope();
-    for (eval_init_decl_list(bootstrap->children);
-         eval_expression(cond->children) || cond->children == NULL;
-         eval_expression(stepin->children)) {
+    for (print_line(bootstrap), eval_init_decl_list(bootstrap->children);
+         print_line(cond), eval_expression(cond->children) || cond->children == NULL;
+         print_line(stepin), eval_expression(stepin->children)) {
         enter_scope();
         eval_stat(body->children);
         leave_scope();
 
         if (break_flag)
             break;
-
-        if (cond->children == NULL) {
-            size_t line = tokens[root->token_idx].line;
-            if (line != prev_line) {
-                printf("empty for stepin : %ld\n", line);
-                if (prev_line)
-                    fprintf(fout, " %ld", line);
-                else
-                    fprintf(fout, "%ld", line);
-                prev_line = line;
-            }
-        }
     }
     leave_scope();
 
@@ -249,18 +249,8 @@ int eval_for_stat(struct syntax_node *root)
 
 int eval_jump_stat(struct syntax_node *root)
 {
+    print_line(root);
     break_flag = 1;
-
-    size_t line = tokens[root->token_idx].line;
-    if (line != prev_line) {
-        printf("break_stat : %ld\n", line);
-        if (prev_line)
-            fprintf(fout, " %ld", line);
-        else
-            fprintf(fout, "%ld", line);
-        prev_line = line;
-    }
-
     return 0;
 }
 
@@ -284,6 +274,8 @@ int eval_expression(struct syntax_node *root)
 // line_printer
 int eval_assignment_exp(struct syntax_node *root)
 {
+    print_line(root);
+
     if (root->type != SYN_ASSIGNMENT_EXP)
         return eval_equality_exp(root);
 
@@ -301,17 +293,6 @@ int eval_equality_exp(struct syntax_node *root)
 {
     int res = 0;
 
-    size_t line = tokens[root->token_idx].line;
-
-    if (line != prev_line) {
-        printf("eval line : %ld\n", line);
-        if (prev_line)
-            fprintf(fout, " %ld", line);
-        else
-            fprintf(fout, "%ld", line);
-        prev_line = line;
-    }
-
     if (root->type != SYN_EQUALITY_EXP) {
         res = eval_relational_exp(root);
     } else {
@@ -323,8 +304,6 @@ int eval_equality_exp(struct syntax_node *root)
         else if (t->type == NE)
             res = eval_equality_exp(exp1) != eval_relational_exp(exp2);
     }
-
-    printf("\trval_expr = %d\n", res);
 
     return res;
 }
@@ -437,11 +416,7 @@ int eval_primary_exp(struct syntax_node *root)
     struct token *t = tokens + root->token_idx;
 
     if (root->type == SYN_ID) {
-        printf("fetching : ");
-        for (size_t i = 0; i < t->length; ++i)
-            putchar(t->literal[i]);
         res = get_record(t->literal, t->length);
-        printf(" = %d\n", res);
     } else if (root->type == SYN_INT_CONST) {
         char tmp = t->literal[t->length];
         t->literal[t->length] = '\0';
