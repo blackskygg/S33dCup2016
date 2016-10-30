@@ -1,5 +1,5 @@
 CXX=g++
-CFLAGS= -std=c++14 -g
+CFLAGS= -std=c++14 -g -Wall
 OBJS = eval_expr.o execute_stat.o parse_stat.o 	\
 	parse_expr.o parser.o lexer.o
 all: 
