@@ -11,7 +11,7 @@ int EqualityExpr:: eval(Scope& scope)
 {
   int val1 = expr1->eval(scope), val2 = expr2->eval(scope);
 
-  if ("!=" == op) val1 != val2;
+  if ("!=" == op) return val1 != val2;
   return val1 == val2;
 }
 

@@ -17,7 +17,9 @@ using namespace std;
 			  size_t origin,			\
 			  T& stat)
 
-/* always use these two macros toghether */
+/* Always use these two macros toghether 
+   First make an origin, and then use POS to calculate the absolute pos.
+*/
 #define MK_ORIGIN(it) auto _str_origin = it
 #define POS(it) ((it) - _str_origin + origin)
 
@@ -148,7 +150,6 @@ STAT_PARSER(SelectStat, select)
 STAT_PARSER(ForStat, for)
 {
   smatch m;
-  int i = 0;
 
   MK_ORIGIN(str_begin);
   
@@ -212,7 +213,6 @@ STAT_PARSER(DoStat, do)
 STAT_PARSER(ExprStat, expr)
 {
   smatch m;
-  size_t pos;
 
   MK_ORIGIN(str_begin);
 
@@ -237,7 +237,6 @@ Parser::parse_stat(string::const_iterator str_begin,
   if (str_begin == str_end)
     return str_begin;
   
-  auto str_origin = str_begin;
   string::const_iterator stat_end;
 
 #define PARSE_STAT(T, v)	{					\
