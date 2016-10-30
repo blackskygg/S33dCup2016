@@ -1,12 +1,11 @@
-#include "syntax.h"
+#include "parser.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
 #define check(t) (tokens[*idx].type == t)
 #define consume() do { (*idx)++; } while (0)
 #define malloc_node() ((struct syntax_node *)malloc(sizeof(struct syntax_node)))
-
-extern struct token tokens[];
 
 struct syntax_node *generate_ast()
 {

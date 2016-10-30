@@ -1,5 +1,5 @@
-#ifndef TOKEN_H
-#define TOKEN_H
+#ifndef LEXER_H
+#define LEXER_H
 
 #include <regex.h>
 
@@ -47,10 +47,12 @@ struct token {
     size_t			line;
 };
 
-void token_regex_init();
+extern struct token tokens[]; // 仅声明，定义在lexer.c中
 
-struct token token_scan(char *code);
+void token_regex_init(); // 用来初始化正则数组的，静态储存因此不需要最后释放
 
-size_t token_fill(char *code);
+struct token token_scan(char *code); // 从code中读一个token
+
+size_t token_fill(char *code); // 填充所有token到tokens[]里
 
 #endif

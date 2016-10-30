@@ -1,7 +1,7 @@
-#ifndef SYNTAX_H
-#define SYNTAX_H
+#ifndef PARSER_H
+#define PARSER_H
 
-#include "token.h"
+#include "lexer.h"
 
 enum syntax_type {
     SYN_STAT_LIST,

@@ -1,10 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "evaluate.h"
 
-// #define DEBUG
+#include <stdio.h>
+#include <stdlib.h>
 
-extern struct token tokens[];
+#include "lexer.h"
+
+// #define DEBUG
 
 extern FILE *fout;
 

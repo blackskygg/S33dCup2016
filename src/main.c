@@ -1,15 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "token.h"
-#include "syntax.h"
+#include "lexer.h"
+#include "parser.h"
 #include "evaluate.h"
 
 FILE *fout = NULL;
 
-extern struct token tokens[];
-extern struct scope_record *scope;
-
+/* 从文件fname读取所有字符到一个数组中
+ * 用fseek获取文件长度，精确malloc文件长的数组
+ */
 char *read_code(const char *fname)
 {
     FILE *fcode = fopen(fname, "rb");
@@ -19,10 +19,12 @@ char *read_code(const char *fname)
         exit(1);
     }
 
+    // 获取文件长度
     fseek(fcode, 0, SEEK_END);
     size_t fsize = ftell(fcode);
     rewind(fcode);
 
+    // 读取文件并封0
     char *buf = (char *)malloc(sizeof(char) * (fsize + 1));
     fread(buf, 1, fsize, fcode);
     buf[fsize] = '\0';
@@ -34,8 +36,6 @@ char *read_code(const char *fname)
 
 int main(int argc, char const *argv[])
 {
-    token_regex_init();
-
     // MALLOC code
     char *code = read_code("input.txt");
 

@@ -4,17 +4,17 @@ CFLAGS=-Wall -g
 all:
 	make -j `getconf _NPROCESSORS_ONLN` compile_all
 
-compile_all: main.o token.o syntax.o evaluate.o
-	$(CC) $(CFLAGS) -o SeedCup2016.exe main.o token.o syntax.o evaluate.o
+compile_all: main.o lexer.o parser.o evaluate.o
+	$(CC) $(CFLAGS) -o SeedCup2016.exe main.o lexer.o parser.o evaluate.o
 
 main: main.c
 	$(CC) $(CFLAGS) -c main.c
 
-token: token.c
-	$(CC) $(CFLAGS) -c token.c
+lexer: lexer.c
+	$(CC) $(CFLAGS) -c lexer.c
 
-syntax: syntax.c
-	$(CC) $(CFLAGS) -c syntax.c
+parser: parser.c
+	$(CC) $(CFLAGS) -c parser.c
 
 evaluate: evaluate.c
 	$(CC) $(CFLAGS) -c evaluate.c

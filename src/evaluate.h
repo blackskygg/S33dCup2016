@@ -1,7 +1,7 @@
 #ifndef EVALUATE_H
 #define EVALUATE_H
 
-#include "syntax.h"
+#include "parser.h"
 
 struct scope_record {
     char *					key;                     // NULL key represents scope sentinel
@@ -9,6 +9,8 @@ struct scope_record {
     int						val;
     struct scope_record *	prev;
 };
+
+extern struct scope_record *scope;
 
 void enter_scope();
 void leave_scope();
