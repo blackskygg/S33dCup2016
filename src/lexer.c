@@ -11,8 +11,8 @@ struct token tokens[65536];
 // 每行对应相对的token类型匹配用的正则
 const char *token_patterns[] = {
     "[ |\t]+",
-    "\r\n",
-    "(/\\*([^\\*]|(\\*[^/]))*\\*/)|(//([^\r]|(\r[^\n]))*)", // C的正则不支持非贪婪，因此手动处理收尾
+    "[\n|\r\n]",
+    "(/\\*([^\\*]|(\\*[^/]))*\\*/)|(//([^\r\n]|(\r[^\n]))*)", // C的正则不支持非贪婪，因此手动处理收尾
     "0|[1-9][0-9]*",
     "\"(\\.|[^\"])*\"",
     "int",
@@ -91,7 +91,7 @@ struct token token_scan(char *code)
     return token;
 }
 
-// 把注释 (非 SP, CRLF 或 COMMENT) 填进 tokens[]
+// 把注释 (非 SP, NL 或 COMMENT) 填进 tokens[]
 // 返回 tokens[] 的长度（即所有token个数），最后一个元素用专属token类型END封住
 size_t token_fill(char *code)
 {
@@ -104,7 +104,7 @@ size_t token_fill(char *code)
         struct token t = token_scan(iter);
         iter += t.length;
 
-        if (t.type == SP || t.type == CRLF || t.type == COMMENT)
+        if (t.type == SP || t.type == NL || t.type == COMMENT)
             continue;
         tokens[token_count] = t;
         token_count++;

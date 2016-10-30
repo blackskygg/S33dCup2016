@@ -5,7 +5,7 @@
 
 enum token_type {
     SP,         // ' ' | '\t'
-    CRLF,       // \r\n
+    NL,         // \r\n | \n
     COMMENT,    // /* asdf */ | // asdf
     INT_CONST,  // 123
     STRING,     // "hello"
