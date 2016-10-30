@@ -18,7 +18,6 @@ void enter_scope()
 {
     struct scope_record *new_head = malloc_record();
 
-    new_head->is_scope_flag = 1;
     new_head->key = NULL;
     new_head->len = 0;
     new_head->val = 0;
@@ -34,7 +33,7 @@ void leave_scope()
     struct scope_record *new_head = NULL;
 
     if (scope) {
-        while (scope && !scope->is_scope_flag) {
+        while (scope && scope->key) {
             new_head = scope->prev;
             free(scope);
             scope = new_head;
@@ -62,7 +61,6 @@ struct scope_record *new_record(char *key, size_t len, int val)
 {
     struct scope_record *new_head = malloc_record();
 
-    new_head->is_scope_flag = 0;
     new_head->key = key;
     new_head->len = len;
     new_head->val = val;

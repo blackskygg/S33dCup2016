@@ -4,8 +4,7 @@
 #include "syntax.h"
 
 struct scope_record {
-    int						is_scope_flag;
-    char *					key;
+    char *					key;                     // NULL key represents scope sentinel
     size_t					len;
     int						val;
     struct scope_record *	prev;
