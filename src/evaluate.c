@@ -153,7 +153,7 @@ int eval_exp_stat(struct syntax_node *root)
     } else {
         size_t line = tokens[root->token_idx].line;
         if (line != prev_line) {
-            printf("empty stat : %ld", line);
+            printf("empty stat : %ld\n", line);
             if (prev_line)
                 fprintf(fout, " %ld", line);
             else
