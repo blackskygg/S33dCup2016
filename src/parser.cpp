@@ -40,32 +40,30 @@ void Result::print(ofstream& ofs)
   lines.pop_back();
   for(auto ln: lines)
     ofs << ln << " ";
-  ofs << n << endl;
+  ofs << n;
 }
 
 int CommaExpr:: eval(Scope& scope)
 {
-  expr1->eval(scope);
-  return expr2->eval(scope);
+  return expr1->eval(scope), expr2->eval(scope);
 }
 
 int EqualityExpr:: eval(Scope& scope)
 {
   int val1 = expr1->eval(scope), val2 = expr2->eval(scope);
-  int ret_val = 1;
 
-  if ("!=" == op) ret_val = 1;
-  return val1 == val2 ? ret_val : !ret_val;
+  if ("!=" == op) val1 != val2;
+  return val1 == val2;
 }
 
 int RelationalExpr:: eval(Scope& scope)
 {
   int val1 = expr1->eval(scope), val2 = expr2->eval(scope);
 
-  if (">=" == op) return val1 >= val2 ? 1 : 0;
-  else if("<=" == op) return val1 <= val2 ? 1 : 0;
-  else if(">" == op) return val1 > val2 ? 1 : 0;
-  else if("<" == op) return val1 < val2 ? 1 : 0;
+  if (">=" == op) return val1 >= val2;
+  else if("<=" == op) return val1 <= val2;
+  else if(">" == op) return val1 > val2;
+  else if("<" == op) return val1 < val2;
   else return -1;
 }
 
@@ -107,15 +105,9 @@ int PostfixExpr:: eval(Scope& scope)
   return val;
 }
 
-int PrimaryExprConst:: eval(Scope& scope)
-{
-  return val;
-}
+int PrimaryExprConst:: eval(Scope& scope) {return val;}
 
-int PrimaryExprId:: eval(Scope& scope)
-{
-  return scope.get_identifier(id);
-}
+int PrimaryExprId:: eval(Scope& scope) {return scope.get_identifier(id);}
 
 int AssignmentExpr::eval(Scope& scope)
 {

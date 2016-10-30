@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
   if (argc < 2)
     return 0;
   
-  ifstream ifs(argv[1], ios::binary);
+  ifstream ifs(argv[1]);
   string buf((istreambuf_iterator<char>(ifs)),
 	     istreambuf_iterator<char>());
   

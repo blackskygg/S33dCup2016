@@ -43,8 +43,8 @@ Lexer::Lexer()
   TOKEN_TPL(SEMICOLON, ";");
   TOKEN_TPL(COLON, ":");
   TOKEN_TPL(COMMA, ",");
-  TOKEN_TPL(COMMENT,"(/\\*(.|\n)*?\\*/)|(//[^\n]*)");
-  TOKEN_TPL(CRLF, "\n");
+  TOKEN_TPL(COMMENT,"(/\\*[^]*?\\*/)|(//[^\r\n]*)");
+  TOKEN_TPL(CRLF, "(?:\r\n)|(?:\n)");  //both CRLF and \n will work
   TOKEN_TPL(STRING_LITERAL, "\"(\\\\.|[^\"])*\"");
 #undef TOKEN_TPL
 }
