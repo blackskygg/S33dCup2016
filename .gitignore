@@ -34,3 +34,7 @@
 # vim
 *~
 *.swp
+
+# i/o files
+src/input.txt
+src/output.txt
