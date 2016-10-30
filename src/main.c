@@ -35,14 +35,19 @@ char *read_code(const char *fname)
 int main(int argc, char const *argv[])
 {
     // MALLOC code
-    char *code = read_code("input.txt");
+    char *code = NULL;
+
+    if (argc > 1)
+        code = read_code(argv[1]);
+    else
+        code = read_code("input.txt");
 
     // STATIC tokens
     size_t token_count = token_fill(code);
 
     // DEBUG display
     for (size_t i = 0; i < token_count; i++) {
-        printf("token: %d\t\"", tokens[i].type);
+        printf("token: %d\tlength: [%ld]\t\"", tokens[i].type, tokens[i].length);
         for (size_t j = 0; j < tokens[i].length; j++)
             putchar(tokens[i].literal[j]);
         printf("\"\t%ld\n", tokens[i].line);
