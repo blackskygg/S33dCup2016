@@ -232,10 +232,17 @@ int eval_for_stat(struct syntax_node *root)
     for (eval_init_decl_list(bootstrap->children);
          eval_expression(cond->children) || cond->children == NULL;
          eval_expression(stepin->children)) {
+        enter_scope();
+        eval_stat(body->children);
+        leave_scope();
+
+        if (break_flag)
+            break;
+
         if (cond->children == NULL) {
             size_t line = tokens[root->token_idx].line;
             if (line != prev_line) {
-                printf("empty for cond : %ld\n", line);
+                printf("empty for stepin : %ld\n", line);
                 if (prev_line)
                     fprintf(fout, " %ld", line);
                 else
@@ -243,13 +250,6 @@ int eval_for_stat(struct syntax_node *root)
                 prev_line = line;
             }
         }
-
-        enter_scope();
-        eval_stat(body->children);
-        leave_scope();
-
-        if (break_flag)
-            break;
     }
     leave_scope();
 
