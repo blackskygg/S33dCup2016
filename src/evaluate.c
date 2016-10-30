@@ -151,16 +151,6 @@ int eval_exp_stat(struct syntax_node *root)
     if (root->children) {
         return eval_expression(root->children);
     } else {
-        size_t line = tokens[root->token_idx].line;
-        if (line != prev_line) {
-            printf("empty stat : %ld\n", line);
-            if (prev_line)
-                fprintf(fout, " %ld", line);
-            else
-                fprintf(fout, "%ld", line);
-            prev_line = line;
-        }
-
         return 0;
     }
 }
