@@ -15,38 +15,38 @@ struct syntax_node *generate_ast()
 {
     size_t iter = 0;
     // 在本题中全局的语法结点类型是stat_list
-    struct syntax_node *root = stat_list(&iter);
+    struct syntax_node *node = stat_list(&iter);
 
-    return root;
+    return node;
 }
 
 // 。。。这个应该不用注释了吧
-void destory_ast(struct syntax_node *root)
+void destory_ast(struct syntax_node *node)
 {
-    if (root) {
-        destory_ast(root->children);
-        destory_ast(root->sibling);
-        free(root);
+    if (node) {
+        destory_ast(node->children);
+        destory_ast(node->sibling);
+        free(node);
     }
 }
 
 // 。。。这个也应该不用注释了吧
-void print_ast(struct syntax_node *root, size_t level)
+void print_ast(struct syntax_node *node, size_t level)
 {
-    if (root) {
-        struct token *t = tokens + root->token_idx;
+    if (node) {
+        struct token *t = tokens + node->token_idx;
 
         for (size_t i = 0; i < level; i++)
             putchar('\t');
-        printf("(%d) [%ld] ", root->type, root->token_idx);
+        printf("(%d) [%ld] ", node->type, node->token_idx);
         printf("\"");
         for (size_t i = 0; i < t->length; i++)
             putchar(t->literal[i]);
         printf("\" ");
         printf("<%ld>\n", t->line);
 
-        print_ast(root->children, level + 1);
-        print_ast(root->sibling, level);
+        print_ast(node->children, level + 1);
+        print_ast(node->sibling, level);
     }
 }
 
@@ -75,7 +75,6 @@ struct syntax_node *stat_list(size_t *idx)
     return node;
 }
 
-// TODO: use default to return NULL
 struct syntax_node *stat(size_t *idx)
 {
     switch (tokens[*idx].type) {
@@ -88,10 +87,15 @@ struct syntax_node *stat(size_t *idx)
     case BREAK: return jump_stat(idx);
     case PRINTF: return print_stat(idx);
 
-    case END: case RBRACE: return NULL;
+    case SEMI_COLON:
+    case ID:
+    case INT_CONST:
+    case ADD:
+    case SUB:
+    return exp_stat(idx);
     // dealing with stat_list's ending token -> next token
 
-    default: return exp_stat(idx);
+    default: return NULL;
     }
 }
 
@@ -514,9 +518,9 @@ struct syntax_node *mult_exp(size_t *idx) // L_comb
 
 struct syntax_node *unary_exp(size_t *idx)
 {
-    struct syntax_node *root;
+    struct syntax_node *node;
 
-    struct syntax_node **iter = &root;
+    struct syntax_node **iter = &node;
 
     while (check(ADD) || check(SUB)) {
         *iter = malloc_node();
@@ -532,27 +536,27 @@ struct syntax_node *unary_exp(size_t *idx)
 
     *iter = postfix_exp(idx);
 
-    return root;
+    return node;
 }
 
 struct syntax_node *postfix_exp(size_t *idx)
 {
-    struct syntax_node *root = primary_exp(idx);
+    struct syntax_node *node = primary_exp(idx);
 
-    if (root && (check(INC) || check(DEC))) {
-        struct syntax_node *new_root = malloc_node();
-        new_root->type = SYN_POSTFIX_EXP;
-        new_root->token_idx = *idx;
+    if (node && (check(INC) || check(DEC))) {
+        struct syntax_node *new_node = malloc_node();
+        new_node->type = SYN_POSTFIX_EXP;
+        new_node->token_idx = *idx;
 
         consume(); // ++ | --
 
-        new_root->children = root;
-        new_root->sibling = NULL;
+        new_node->children = node;
+        new_node->sibling = NULL;
 
-        root = new_root;
+        node = new_node;
     }
 
-    return root;
+    return node;
 }
 
 struct syntax_node *primary_exp(size_t *idx)
@@ -590,19 +594,19 @@ struct syntax_node *primary_exp(size_t *idx)
     return node;
 }
 
-struct syntax_node *rotate_exp(struct syntax_node *root)
+struct syntax_node *rotate_exp(struct syntax_node *node)
 {
-    if (!root || !root->children)
-        return root;
-    struct syntax_node *left = root->children->sibling;
-    if (left == NULL || left->type != root->type) {
-        return root;
+    if (!node || !node->children)
+        return node;
+    struct syntax_node *left = node->children->sibling;
+    if (left == NULL || left->type != node->type) {
+        return node;
     } else {
         struct syntax_node *tmp = left->children;
-        left->children = root;
-        root->sibling = tmp->sibling;
+        left->children = node;
+        node->sibling = tmp->sibling;
         tmp->sibling = NULL;
-        root->children->sibling = tmp;
+        node->children->sibling = tmp;
         return rotate_exp(left);
     }
 }
