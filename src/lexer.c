@@ -43,6 +43,7 @@ const char *token_patterns[] = {
     "\\*",
     "/",
     "([_a-zA-Z\u4e00-\u9fa5])([\u4e00-\u9fa5_a-zA-Z0-9])*",
+    "."
 };
 
 // 用来存编译后的正则
@@ -93,12 +94,11 @@ struct token token_scan(char *code)
 
 // 把注释 (非 SP, NL 或 COMMENT) 填进 tokens[]
 // 返回 tokens[] 的长度（即所有token个数），最后一个元素用专属token类型END封住
-size_t token_fill(char *code)
+size_t token_fill(char *iter)
 {
     // C不能用非编译时常量初始化全局作用域的变量
     token_regex_init();
 
-    char *iter = code;
     size_t token_count = 0;
     while (*iter && *iter != EOF) {
         struct token t = token_scan(iter);
