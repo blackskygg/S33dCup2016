@@ -3,14 +3,23 @@
 
 using namespace std;
 
+string read_file(char *fn)
+{
+  ifstream ifs(fn, ios::binary);
+  ostringstream ostrm;
+
+  ostrm << ifs.rdbuf();
+  return ostrm.str();
+}
+    
+
+
 int main(int argc, char *argv[])
 {
   if (argc < 2)
     return 0;
-  
-  ifstream ifs(argv[1]);
-  string buf((istreambuf_iterator<char>(ifs)),
-	     istreambuf_iterator<char>());
+
+  string buf = read_file(argv[1]);
   
   Lexer lexer;
   vector<Token> tokens;

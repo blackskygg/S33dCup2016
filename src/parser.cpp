@@ -36,6 +36,8 @@ void Result::add_line(int linum) {
 
 void Result::print(ofstream& ofs)
 {
+  if (0 == lines.size()) return;
+  
   int n = lines.back();
   lines.pop_back();
   for(auto ln: lines)
