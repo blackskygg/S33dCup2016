@@ -5,10 +5,9 @@
 #include "syntax.h"
 #include "evaluate.h"
 
-struct token tokens[65536];
-
 FILE *fout = NULL;
 
+extern struct token tokens[];
 extern struct scope_record *scope;
 
 char *read_code(const char *fname)
@@ -40,20 +39,8 @@ int main(int argc, char const *argv[])
     // MALLOC code
     char *code = read_code("input.txt");
 
-    // fill tokens (not SP, CRLF or COMMENT) into tokens[]
-    // store tokens[] length into token_count
-    char *iter = code;
-    size_t token_count = 0;
-    while (*iter && *iter != EOF) {
-        struct token t = token_scan(iter);
-        iter += t.length;
-
-        if (t.type == SP || t.type == CRLF || t.type == COMMENT)
-            continue;
-        tokens[token_count] = t;
-        token_count++;
-    }
-    tokens[token_count].type = END;
+    // STATIC tokens
+    size_t token_count = token_fill(code);
 
     // DEBUG display
     for (size_t i = 0; i < token_count; i++) {
@@ -73,7 +60,6 @@ int main(int argc, char const *argv[])
     print_ast(root, 0);
 
     enter_scope();
-    // printer
     eval_stat_list(root);
     leave_scope();
 

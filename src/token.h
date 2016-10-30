@@ -51,4 +51,6 @@ void token_regex_init();
 
 struct token token_scan(char *code);
 
+size_t token_fill(char *code);
+
 #endif

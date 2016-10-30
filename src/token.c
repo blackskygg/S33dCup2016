@@ -1,9 +1,10 @@
 #include "token.h"
+#include <stdio.h>
 #include <stdlib.h>
 
-#ifndef TOKEN_TYPE_NUM
 #define TOKEN_TYPE_NUM 33
-#endif
+
+struct token tokens[65536];
 
 const char *token_patterns[] = {
     "[ |\t]+",
@@ -80,4 +81,24 @@ struct token token_scan(char *code)
             line++;
 
     return token;
+}
+
+size_t token_fill(char *code)
+{
+    // fill tokens (not SP, CRLF or COMMENT) into tokens[]
+    // store tokens[] length into token_count
+    char *iter = code;
+    size_t token_count = 0;
+    while (*iter && *iter != EOF) {
+        struct token t = token_scan(iter);
+        iter += t.length;
+
+        if (t.type == SP || t.type == CRLF || t.type == COMMENT)
+        continue;
+        tokens[token_count] = t;
+        token_count++;
+    }
+    tokens[token_count].type = END;
+
+    return token_count;
 }
