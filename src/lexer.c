@@ -42,7 +42,7 @@ const char *token_patterns[] = {
     "-",
     "\\*",
     "/",
-    "[_a-zA-Z][_a-zA-Z0-9]*",
+    "([_a-zA-Z\u4e00-\u9fa5])([\u4e00-\u9fa5_a-zA-Z0-9])*",
 };
 
 // 用来存编译后的正则
