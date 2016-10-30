@@ -215,17 +215,18 @@ struct syntax_node *selection_stat(size_t *idx)
     body->token_idx = *idx;
     body->children = stat(idx);
 
+    body->sibling = malloc_node();
+    struct syntax_node *else_body = body->sibling;
+    else_body->type = SYN_ELSE;
+    else_body->token_idx = *idx;
+    else_body->sibling = NULL;
+
     if (check(ELSE)) {
         consume(); // else
 
-        body->sibling = malloc_node();
-        struct syntax_node *else_body = body->sibling;
-        else_body->type = SYN_ELSE;
-        else_body->token_idx = *idx;
         else_body->children = stat(idx);
-        else_body->sibling = NULL;
     } else {
-        body->sibling = NULL;
+        else_body->children = NULL;
     }
 
     node->sibling = NULL;
