@@ -7,7 +7,7 @@
 
 // #define DEBUG
 
-extern FILE *fout;
+FILE *fout;
 
 int prev_line = 0;
 struct scope_record *scope = NULL;

@@ -45,10 +45,12 @@ struct syntax_node {
     struct syntax_node *sibling;
 };
 
+// 不用注释这几个的功能吧。。。
 struct syntax_node *generate_ast();
 void destory_ast(struct syntax_node *root);
 void print_ast(struct syntax_node *root, size_t level);
 
+// 解析具体语法结构
 struct syntax_node *stat_list(size_t *idx);
 struct syntax_node *stat(size_t *idx);
 struct syntax_node *decl_stat(size_t *idx);
@@ -71,6 +73,9 @@ struct syntax_node *mult_exp(size_t *idx);
 struct syntax_node *unary_exp(size_t *idx);
 struct syntax_node *postfix_exp(size_t *idx);
 struct syntax_node *primary_exp(size_t *idx);
+
+// 这能算亮点吧。。。吗？
+// 处理左结合型的运算符：先按右结合生成避免无限递归，然后把树旋转一下
 
 // fix l-comb exps' ast
 struct syntax_node *rotate_exp(struct syntax_node *root);

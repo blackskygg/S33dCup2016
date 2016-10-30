@@ -5,8 +5,6 @@
 #include "parser.h"
 #include "evaluate.h"
 
-FILE *fout = NULL;
-
 /* 从文件fname读取所有字符到一个数组中
  * 用fseek获取文件长度，精确malloc文件长的数组
  */
@@ -54,14 +52,16 @@ int main(int argc, char const *argv[])
     // MALLOC root
     struct syntax_node *root = generate_ast();
 
+    // 这个变量声明在evaluate.h中，定义在evaluate.c
+    // 用来传输出文件（显然）
     fout = fopen("output.txt", "w");
 
     // DEBUG display
     print_ast(root, 0);
 
-    enter_scope();
+    enter_scope(); // 全局就是一个作用域
     eval_stat_list(root);
-    leave_scope();
+    leave_scope(); // 离开全局作用域
 
     fclose(fout);
 

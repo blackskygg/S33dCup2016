@@ -3,18 +3,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define check(t) (tokens[*idx].type == t)
-#define consume() do { (*idx)++; } while (0)
+// 用来写状态机的辅助宏（其实就是短函数）
+#define check(t) (tokens[*idx].type == t)       // 检查这个token类型
+#define consume() do { (*idx)++; } while (0)    // 消耗一个token
+
+// malloc语法树结点的辅助宏，malloc实在是太长了
 #define malloc_node() ((struct syntax_node *)malloc(sizeof(struct syntax_node)))
 
+// 生成语法树包装后的启动函数，提供一个启动的iter供内部所有函数用（相当于一个闭包？）
 struct syntax_node *generate_ast()
 {
     size_t iter = 0;
+    // 在本题中全局的语法结点类型是stat_list
     struct syntax_node *root = stat_list(&iter);
 
     return root;
 }
 
+// 。。。这个应该不用注释了吧
 void destory_ast(struct syntax_node *root)
 {
     if (root) {
@@ -24,6 +30,7 @@ void destory_ast(struct syntax_node *root)
     }
 }
 
+// 。。。这个也应该不用注释了吧
 void print_ast(struct syntax_node *root, size_t level)
 {
     if (root) {
@@ -43,25 +50,32 @@ void print_ast(struct syntax_node *root, size_t level)
     }
 }
 
+/*****************************************************************
+* 请注意！！！！！！接下来是又臭又长的具体状态机实现，请看提供的文档。
+* 当然你要是愿意读那我也没什么好说的。。。
+* 简单地写了点注释给自己写程序的时候看的。
+* 在consume()的位置会注明消耗的token类型
+*****************************************************************/
 struct syntax_node *stat_list(size_t *idx)
 {
-    struct syntax_node *head = malloc_node();
+    struct syntax_node *node = malloc_node();
 
-    head->type = SYN_STAT_LIST;
-    head->token_idx = *idx;
-    head->children = stat(idx);
+    node->type = SYN_STAT_LIST;
+    node->token_idx = *idx;
+    node->children = stat(idx);
 
-    struct syntax_node *iter = head->children;
+    struct syntax_node *iter = node->children;
     while (iter) {
         iter->sibling = stat(idx);
         iter = iter->sibling;
     }
 
-    head->sibling = NULL;
+    node->sibling = NULL;
 
-    return head;
+    return node;
 }
 
+// TODO: use default to return NULL
 struct syntax_node *stat(size_t *idx)
 {
     switch (tokens[*idx].type) {
@@ -73,7 +87,10 @@ struct syntax_node *stat(size_t *idx)
     case FOR: return for_stat(idx);
     case BREAK: return jump_stat(idx);
     case PRINTF: return print_stat(idx);
+
     case END: case RBRACE: return NULL;
+    // dealing with stat_list's ending token -> next token
+
     default: return exp_stat(idx);
     }
 }
@@ -546,7 +563,7 @@ struct syntax_node *primary_exp(size_t *idx)
         node->type = SYN_ID;
         node->token_idx = *idx;
 
-        consume();
+        consume(); // ID
 
         node->children = NULL;
         node->sibling = NULL;
@@ -555,7 +572,7 @@ struct syntax_node *primary_exp(size_t *idx)
         node->type = SYN_INT_CONST;
         node->token_idx = *idx;
 
-        consume();
+        consume(); // INT_CONST
 
         node->children = NULL;
         node->sibling = NULL;
@@ -564,7 +581,7 @@ struct syntax_node *primary_exp(size_t *idx)
         node->type = SYN_STRING;
         node->token_idx = *idx;
 
-        consume();
+        consume();  // STRING
 
         node->children = NULL;
         node->sibling = NULL;
