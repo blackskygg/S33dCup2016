@@ -100,6 +100,7 @@ STAT_PARSER(CompoundStat, comp)
   smatch m;
   string::const_iterator comp_end;
 
+  // skip {
   ++str_begin;
   str_begin = parse_stat_list(str_begin, str_end, origin + 1, stat.stat_list);
 
@@ -127,13 +128,13 @@ STAT_PARSER(SelectStat, select)
 
   MK_ORIGIN(str_begin);
   
-  //if(expr)
+  //skip if(
   str_begin+=2;
   regex_search(str_begin, str_end, m, regex("(.+?)\\)"),
 	       regex_constants::match_continuous);
   parse_expr(m[1].first, m[1].second, POS(m[1].first), stat.expr);
 
-  // {}
+  // parse comp
   str_begin = m[0].second;
   str_begin = parse_stat(str_begin, str_end, POS(str_begin), stat.stat1);
 
@@ -244,9 +245,6 @@ Parser::parse_stat(string::const_iterator str_begin,
     stat_end = PARSER_NAME(v)(str_begin, str_end, origin, *v##_ptr);	\
     stat_ptr = dynamic_pointer_cast<Statement>(v##_ptr);  }
 
-  // cout << string(str_begin, str_end) <<endl;
-  // cout << tokens[origin].code <<endl;
-  //  cout << *str_begin << " linum: "<< tokens[origin].linum <<endl;
   switch (*str_begin) {
   case 'i': PARSE_STAT(DeclStat, decl);
     break;

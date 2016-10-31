@@ -1,8 +1,11 @@
+#include <iostream>
+#include <stringstream>
 #include "lexer.h"
 #include "parser.h"
 
 using namespace std;
 
+/* read the raw content from file */
 string read_file(char *fn)
 {
   ifstream ifs(fn, ios::binary);
@@ -20,15 +23,20 @@ int main(int argc, char *argv[])
     return 0;
 
   string buf = read_file(argv[1]);
-  
+
+  /* stage one: tokenize */
   Lexer lexer;
   vector<Token> tokens;
   lexer.scan(buf, tokens);
 
+  /* stage two: parsing 
+   * this stage includes generating the result 
+   */
   Parser parser(tokens);
   Result result;
   parser.parse(result);
 
+  /* stage tree: output */
   ofstream ofs("output.txt");
   result.print(ofs);
   

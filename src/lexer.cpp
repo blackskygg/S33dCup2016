@@ -11,6 +11,7 @@ void Token::print()
 
 Lexer::Lexer()
 {
+  /* supported tokens and their patterns */
 #define TOKEN_TPL(T, R) token_tpls.push_back(make_pair(Token::T, regex(R)))
   TOKEN_TPL(BLANK, "[ \t]+");
   TOKEN_TPL(INT_TYPE, "int");
@@ -49,6 +50,7 @@ Lexer::Lexer()
 #undef TOKEN_TPL
 }
 
+/* count the number of newlines in s */
 int Lexer::count_crlf(string s)
 {
   size_t pos = 0;
@@ -62,9 +64,12 @@ int Lexer::count_crlf(string s)
   return result;
 }
 
+/* main scanner
+ * scan the raw input and return a list of Tokens
+ */
 int Lexer::scan(string s, vector<Token>& result)
 {
-  Token::TokenType type;
+  Token::TokenType type, last_type = Token::BLANK;
   smatch m;
   ssub_match best_match;
   int max_len = 0, linum = 1;
@@ -72,7 +77,6 @@ int Lexer::scan(string s, vector<Token>& result)
 
   while (str_begin != str_end) {
     max_len = 0;
-
     //search for best match
     for (auto tpl: token_tpls) {
       if (regex_search(str_begin, str_end, m, tpl.second,
@@ -88,12 +92,20 @@ int Lexer::scan(string s, vector<Token>& result)
     if (!max_len) break;
     else str_begin += max_len;
     
-    //increase the linum accordingly
+    // increase the linum accordingly
     if (Token::CRLF == type) ++linum;
     else if (Token::COMMENT == type) linum += count_crlf(best_match.str());
 
-    if(type != Token::CRLF && type != Token::COMMENT && type != Token::BLANK)
+    /* ignore blank and crlf
+     * and if last pushed token is stringliteral, ignore the current
+     * to mimic the "string" "string" concating syntax
+     */
+    if(type != Token::CRLF && type != Token::COMMENT 
+        && type != Token::BLANK && last_type != Token::STRING_LITERAL) 
+    {
+      last_type = type;
       result.push_back(Token(type, linum, best_match.str()));
+    }
   }
 
   return 0;
