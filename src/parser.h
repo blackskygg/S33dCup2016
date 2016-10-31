@@ -15,12 +15,13 @@
 using std::cout;
 using std::endl;
 
+/* A Scope represents the "scope" concept in C*/
 class Scope {
  public:
  Scope() : parent(nullptr) {};
   Scope(Scope* parent) : parent(parent) {};
   int get_identifier(const std::string& name);
-  void set_identifier(const std::string& name, int val);
+  void add_identifier(const std::string& name, int val);
   void mod_identifier(const std::string& name, int val);
 
  private:
@@ -28,6 +29,7 @@ class Scope {
   std::unordered_map<std::string, int> vars;
 };
 
+/* a Result holds the final answer */
 class Result {
  public:
   void add_line(int linum);
@@ -38,6 +40,10 @@ class Result {
   int prev = -1;
 };
 
+/* This is the base class for all Expression types.
+ * Supported types are defined in Expression::ExprType.
+ * We use long long as the value type to avoid overflow
+ */
 class Expression{
  public:
   typedef enum{
@@ -53,127 +59,85 @@ class Expression{
   } ExprType;
 
   virtual long long eval(Scope &scope)  = 0;
-  virtual void print() {};
-
 };
 
+/* id = expr */
 class AssignmentExpr: public Expression {
  public:
   long long eval(Scope &scope);
-  void print() {
-    cout << "ASSIGN: " <<endl;
-    cout << "ID: " << this->id <<endl;
-    cout << "Expr: ";
-    expr->print();
-  };
   
   std::string id;
   std::shared_ptr<Expression> expr;
 };
 
+/* expr, expr   where expr could be another CommaExpr */
 class CommaExpr: public Expression {
  public:
   long long eval(Scope &scope);
-  void print() {
-    cout << "COMMA: "<< endl;
-    cout << "Expr1: ";
-    expr1->print();
-    cout<<endl << "Expr2: ";
-    expr2->print();
-  };
 
   std::shared_ptr<Expression> expr1;
   std::shared_ptr<Expression> expr2;
 };
 
+/* expr == expr */
 class EqualityExpr: public Expression {
  public:
   long long eval(Scope &scope);
-  void print() {
-    cout << "OP: " << op <<endl;
-    cout << "Expr1: ";
-    expr1->print();
-    cout << "Expr2: ";
-    expr2->print();
-  };
 
   std::string op;
   std::shared_ptr<Expression> expr1;
   std::shared_ptr<Expression> expr2;
 };
 
+/* expr cmp_op expr */
 class RelationalExpr: public Expression {
  public:
   long long eval(Scope &scope);
-  void print() {
-    cout << "OP: " << op <<endl;
-    cout << "Expr1: ";
-    expr1->print();
-    cout <<"Expr2: ";
-    expr2->print();
-  };
 
   std::string op;
   std::shared_ptr<Expression> expr1;
   std::shared_ptr<Expression> expr2;
 };
 
+/* expr add/sub expr */
 class AdditiveExpr: public Expression {
  public:
   long long eval(Scope &scope);
-  void print() {
-    cout << "OP: " << op <<endl;
-    cout << "Expr1: ";
-    expr1->print();
-    cout << "Expr2: ";
-    expr2->print();
-  };
 
   std::string op;
   std::shared_ptr<Expression> expr1;
   std::shared_ptr<Expression> expr2;
 };
 
+/* expr mult_op expr */
 class MultExpr: public Expression {
  public:
   long long eval(Scope &scope);
-  void print() {
-    cout << "OP: " << op <<endl;
-    cout << "Expr1: ";
-    expr1->print();
-    cout << "Expr2: ";
-    expr2->print();
-  };
 
   std::string op;
   std::shared_ptr<Expression> expr1;
   std::shared_ptr<Expression> expr2;
 };
 
+/* +-expr */
 class UnaryExpr: public Expression {
  public:
   long long eval(Scope &scope);
-  void print() {
-    cout << "UNARYOP: " << op <<endl;
-    cout << "Expr: ";
-    expr->print();
-  };
 
   std::string op; 
   std::shared_ptr<Expression> expr;
 };
 
+/* int const */
 class PrimaryExprConst: public Expression {
  public:
   PrimaryExprConst(int val): val(val) {};
   long long eval(Scope &scope);
-  void print() {
-    cout << "const: " << val <<endl;
-  };
 
   long long val;
 };
 
+/* var_name */
 class PrimaryExprId: public Expression {
  public:
  PrimaryExprId(std::string id): id(id) {};
@@ -185,19 +149,18 @@ class PrimaryExprId: public Expression {
   std::string id;
 };
 
+/* var++/-- */
 class PostfixExpr: public Expression {
  public:
   long long eval(Scope &scope);
-  void print() {
-    cout << "POSTOP: " << op <<endl;
-    cout << "Expr: ";
-    expr->print();
-  };
   
   std::string op; 
   std::shared_ptr<Expression> expr;
 };
 
+/* This is the base class for all the Statment types
+ * Supported type are defined in  Statement::StatType
+ */
 class Statement {
  public:
 
@@ -212,75 +175,53 @@ class Statement {
     PRINT_STAT = 7,
   }StatType;
 
+  /* this exception is used to handle the "break" statement
+   * we use this coz it's the most natural way
+   */
   class BreakException : public std::exception {};
 
   Statement() = default;
   Statement(int linum): linum(linum) {};
   virtual void execute(Result& result, Scope& scope) {};
-  virtual void print() {
-  };
 
   int linum;
 };
 
+/* elements in the decl_list 
+ * it's evaluation will add new items in the current scope
+ */
 class InitDecl: public Expression {
  public:
   long long eval(Scope &scope);
-  void print() {
-    cout << "InitDecl: " <<  id <<endl;
-    cout << "ID: " <<  id <<endl;
-    cout << "Expr: ";
-    expr->print();
-  };
 
   std::string id;
   std::shared_ptr<Expression> expr;
 };
 
+/* declaration statement */
 class DeclStat: public Statement {
  public:
   DeclStat(int linum): Statement(linum) {};
   void execute(Result &result, Scope& scope);
-  void print() {
-    cout << "Decl: " << endl;
-    for(auto decl: this->decl_list) {
-      decl.print();
-    }
-    cout<<endl<<"DeclEnd"<<endl;
-  };
 
   bool has_init = false;
   std::vector<InitDecl> decl_list;
 };
 
+/* {stat_list} */
 class CompoundStat: public Statement {
  public:
   CompoundStat(int linum): Statement(linum) {};
   void execute(Result &result, Scope& scope);
-  void print() {
-    cout << "Compound: " << endl;
-    for(auto stat: this->stat_list) {
-      stat->print();
-    }
-    cout<<endl<<"CompoundEnd"<<endl;
-  };
-  
+
   std::vector< std::shared_ptr<Statement> > stat_list;
 };
 
+/* if .. else .. */
 class SelectStat: public Statement {
  public:
   SelectStat(int linum): Statement(linum) {};
   void execute(Result &result, Scope& scope);
-  void print() {
-    cout << "If: " << endl;
-    expr->print();
-    stat1->print();
-    if (this->has_else) {
-      stat2->print();
-    }
-    cout<<endl<<"IfEnd"<<endl;
-  };
 
   bool has_else = false;
   std::shared_ptr<Expression> expr;
@@ -288,23 +229,12 @@ class SelectStat: public Statement {
   std::shared_ptr<Statement> stat2;
 };
 
+/* for loop */
 class ForStat: public Statement {
  public:
  ForStat(int linum):
   Statement(linum), decl(linum) {};
   void execute(Result &result, Scope& scope);
-  void print() {
-    cout << "For: " << endl;
-    if (has_decl) decl.print();
-    else expr[0]->print();
-    cout<<"ForExpr1"<<endl;
-    expr[1]->print();
-    cout<<"ForExpr2"<<endl;
-    expr[2]->print();
-    cout<<"ForStat2"<<endl;
-    stat->print();
-    cout<<"ForEnd"<<endl;
-  };
 
   bool has_decl = false;
   DeclStat decl;
@@ -312,41 +242,27 @@ class ForStat: public Statement {
   std::shared_ptr<Statement> stat;
 };
 
+/* while loop */
 class WhileStat: public Statement {
  public:
   WhileStat(int linum) : Statement(linum) {};
   void execute(Result &result, Scope& scope);
-  void print() {
-    cout << "While: " << endl;
-    expr->print();
-    stat->print();
-    cout<<endl<<"WhileEnd"<<endl;
-  };
 
   std::shared_ptr<Expression> expr;
   std::shared_ptr<Statement> stat;
 };
 
+/* break statement, this will cause a BreakException */
 class BreakStat: public Statement {
  public:
   BreakStat(int linum) : Statement(linum) {};
   void execute(Result &result, Scope& scope);
-  void print() {
-    cout << "Break: " << endl;
-    cout << "BreakEnd: "<<endl;
-  };
 };
 
 class DoStat: public Statement {
  public:
   DoStat(int linum) : Statement(linum) {};
   void execute(Result &result, Scope& scope);
-  void print() {
-    cout << "Do: " << endl;
-    expr->print();
-    stat->print();
-    cout<<endl<<"DoEnd"<<endl;
-  };
 
   std::shared_ptr<Expression> expr;
   std::shared_ptr<Statement> stat;
@@ -356,11 +272,6 @@ class PrintStat: public Statement {
  public:
   PrintStat(int linum) : Statement(linum){};
   void execute(Result &result, Scope& scope);
-  void print() {
-    cout << "Print: " << endl;
-    expr->print();
-    cout<<endl<<"PrintEnd"<<endl;
-  };
 
   std::shared_ptr<Expression> expr;
 };
@@ -369,11 +280,6 @@ class ExprStat : public Statement {
  public:
  ExprStat(int linum) : Statement(linum) {};
   void execute(Result &result, Scope& scope);
-  void print() {
-    cout << "ExprStat: " << endl;
-    expr->print();
-    cout<<endl<<"ExprStatEnd"<<endl;
-  };
 
   bool is_empty = false;
   std::shared_ptr<Expression> expr;

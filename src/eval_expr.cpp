@@ -81,7 +81,7 @@ long long InitDecl::eval(Scope& scope)
 {
   long long val = expr->eval(scope);
 
-  scope.set_identifier(id, val);
+  scope.add_identifier(id, val);
   
   return val;
 }
