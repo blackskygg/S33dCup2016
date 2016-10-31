@@ -52,30 +52,28 @@ class Expression{
     PRIMARY = 8,
   } ExprType;
 
-  virtual int eval(Scope &scope)  = 0;
-  virtual void print() {
-
-  };
+  virtual long long eval(Scope &scope)  = 0;
+  virtual void print() {};
 
 };
 
 class AssignmentExpr: public Expression {
  public:
-  int eval(Scope &scope);
+  long long eval(Scope &scope);
   void print() {
     cout << "ASSIGN: " <<endl;
     cout << "ID: " << this->id <<endl;
     cout << "Expr: ";
     expr->print();
   };
-
+  
   std::string id;
   std::shared_ptr<Expression> expr;
 };
 
 class CommaExpr: public Expression {
  public:
-  int eval(Scope &scope);
+  long long eval(Scope &scope);
   void print() {
     cout << "COMMA: "<< endl;
     cout << "Expr1: ";
@@ -90,7 +88,7 @@ class CommaExpr: public Expression {
 
 class EqualityExpr: public Expression {
  public:
-  int eval(Scope &scope);
+  long long eval(Scope &scope);
   void print() {
     cout << "OP: " << op <<endl;
     cout << "Expr1: ";
@@ -106,7 +104,7 @@ class EqualityExpr: public Expression {
 
 class RelationalExpr: public Expression {
  public:
-  int eval(Scope &scope);
+  long long eval(Scope &scope);
   void print() {
     cout << "OP: " << op <<endl;
     cout << "Expr1: ";
@@ -122,7 +120,7 @@ class RelationalExpr: public Expression {
 
 class AdditiveExpr: public Expression {
  public:
-  int eval(Scope &scope);
+  long long eval(Scope &scope);
   void print() {
     cout << "OP: " << op <<endl;
     cout << "Expr1: ";
@@ -138,7 +136,7 @@ class AdditiveExpr: public Expression {
 
 class MultExpr: public Expression {
  public:
-  int eval(Scope &scope);
+  long long eval(Scope &scope);
   void print() {
     cout << "OP: " << op <<endl;
     cout << "Expr1: ";
@@ -154,7 +152,7 @@ class MultExpr: public Expression {
 
 class UnaryExpr: public Expression {
  public:
-  int eval(Scope &scope);
+  long long eval(Scope &scope);
   void print() {
     cout << "UNARYOP: " << op <<endl;
     cout << "Expr: ";
@@ -168,18 +166,18 @@ class UnaryExpr: public Expression {
 class PrimaryExprConst: public Expression {
  public:
   PrimaryExprConst(int val): val(val) {};
-  int eval(Scope &scope);
+  long long eval(Scope &scope);
   void print() {
     cout << "const: " << val <<endl;
   };
 
-  int val;
+  long long val;
 };
 
 class PrimaryExprId: public Expression {
  public:
  PrimaryExprId(std::string id): id(id) {};
-  int eval(Scope &scope);
+  long long eval(Scope &scope);
   void print() {
     cout << "ID: " << id <<endl;
   };
@@ -189,7 +187,7 @@ class PrimaryExprId: public Expression {
 
 class PostfixExpr: public Expression {
  public:
-  int eval(Scope &scope);
+  long long eval(Scope &scope);
   void print() {
     cout << "POSTOP: " << op <<endl;
     cout << "Expr: ";
@@ -227,7 +225,7 @@ class Statement {
 
 class InitDecl: public Expression {
  public:
-  int eval(Scope &scope);
+  long long eval(Scope &scope);
   void print() {
     cout << "InitDecl: " <<  id <<endl;
     cout << "ID: " <<  id <<endl;

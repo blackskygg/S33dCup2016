@@ -3,11 +3,13 @@
 
 using namespace std;
 
+#ifdef DEBUG
 void Token::print()
 {
   cout<<"{type: "<< type <<", code:  \""<<code
       <<"\", linum: "<< linum <<"}"<<endl;
 }
+#endif
 
 Lexer::Lexer()
 {
