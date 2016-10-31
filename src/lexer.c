@@ -5,7 +5,7 @@
 
 #define TOKEN_TYPE_NUM 33
 
-struct token tokens[65536];
+struct token *tokens;
 
 // 请开两个窗口将这个和lexer.h中enum token_type定义对比着读
 // 每行对应相对的token类型匹配用的正则
@@ -94,22 +94,36 @@ struct token token_scan(char *code)
 
 // 把注释 (非 SP, NL 或 COMMENT) 填进 tokens[]
 // 返回 tokens[] 的长度（即所有token个数），最后一个元素用专属token类型END封住
-size_t token_fill(char *iter)
+size_t token_fill(char *iter, size_t max_len)
 {
     // C不能用非编译时常量初始化全局作用域的变量
     token_regex_init();
 
+    tokens = (struct token *)malloc(sizeof(struct token) * max_len);
+
     size_t token_count = 0;
+    int prev_is_str = 0;
     while (*iter && *iter != EOF) {
         struct token t = token_scan(iter);
         iter += t.length;
 
-        if (t.type == SP || t.type == NL || t.type == COMMENT)
+        if (t.type == SP || t.type == NL || t.type == COMMENT || (t.type == STRING && prev_is_str))
             continue;
+
         tokens[token_count] = t;
         token_count++;
+
+        if (t.type == STRING)
+            prev_is_str = 1;
+        else
+            prev_is_str = 0;
     }
     tokens[token_count].type = END;
 
     return token_count;
+}
+
+void token_destroy()
+{
+    free(tokens);
 }

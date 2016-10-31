@@ -5,11 +5,16 @@
 #include "parser.h"
 #include "evaluate.h"
 
-/* 从文件fname读取所有字符到一个数组中
- * 用fseek获取文件长度，精确malloc文件长的数组
- */
-char *read_code(const char *fname)
+int main(int argc, char const *argv[])
 {
+    char *code = NULL;
+    const char *fname = NULL;
+
+    if (argc > 1)
+        fname = argv[1];
+    else
+        fname = "input.txt";
+
     FILE *fcode = fopen(fname, "rb");
 
     if (fcode == NULL) {
@@ -22,28 +27,17 @@ char *read_code(const char *fname)
     size_t fsize = ftell(fcode);
     rewind(fcode);
 
+    // MALLOC code
+    code = (char *)malloc(sizeof(char) * (fsize + 1));
+
     // 读取文件并封0
-    char *buf = (char *)malloc(sizeof(char) * (fsize + 1));
-    fread(buf, 1, fsize, fcode);
-    buf[fsize] = '\0';
+    fread(code, 1, fsize, fcode);
+    code[fsize] = '\0';
 
     fclose(fcode);
 
-    return buf;
-}
-
-int main(int argc, char const *argv[])
-{
-    // MALLOC code
-    char *code = NULL;
-
-    if (argc > 1)
-        code = read_code(argv[1]);
-    else
-        code = read_code("input.txt");
-
     // STATIC tokens
-    size_t token_count = token_fill(code);
+    size_t token_count = token_fill(code, fsize);
 
     // DEBUG display
     for (size_t i = 0; i < token_count; i++) {
@@ -72,6 +66,8 @@ int main(int argc, char const *argv[])
 
     // FREE root
     destory_ast(root);
+
+    token_destroy();
 
     // FREE code
     free(code);
