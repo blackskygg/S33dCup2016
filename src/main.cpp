@@ -28,6 +28,8 @@ int main(int argc, char *argv[])
   Lexer lexer;
   vector<Token> tokens;
   lexer.scan(buf, tokens);
+  for (auto tk : tokens)
+    tk.print();
 
   /* stage two: parsing 
    * this stage includes generating the result 

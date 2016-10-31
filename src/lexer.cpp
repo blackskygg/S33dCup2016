@@ -3,13 +3,9 @@
 
 using namespace std;
 
-#ifdef DEBUG
-void Token::print()
-{
-  cout<<"{type: "<< type <<", code:  \""<<code
-      <<"\", linum: "<< linum <<"}"<<endl;
+void Token::print() {
+  cout << code << endl;
 }
-#endif
 
 Lexer::Lexer()
 {
@@ -98,16 +94,19 @@ int Lexer::scan(string s, vector<Token>& result)
     if (Token::CRLF == type) ++linum;
     else if (Token::COMMENT == type) linum += count_crlf(best_match.str());
 
-    /* ignore blank and crlf
-     * and if last pushed token is stringliteral, ignore the current
-     * to mimic the "string" "string" concating syntax
+    /* Ignore blank crlf and comments
+     * And if encountered with consequtive string listerals, 
+     * only push the first one to handle the "string" "string" concating syntax
      */
-    if(type != Token::CRLF && type != Token::COMMENT 
-        && type != Token::BLANK && last_type != Token::STRING_LITERAL) 
-    {
+    if (type == Token::CRLF || type == Token::COMMENT || type == Token::BLANK
+	|| (type == Token::STRING_LITERAL
+	    && last_type == Token::STRING_LITERAL)) {
+      continue;
+    } else {
       last_type = type;
       result.push_back(Token(type, linum, best_match.str()));
     }
+    
   }
 
   return 0;

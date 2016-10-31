@@ -6,6 +6,10 @@
 #include <regex>
 #include <utility>
 
+/* A Token reprents a lexical element .
+ * Supported token types are listed in Token::TokenType
+ */
+
 class Token {
 public:
 
@@ -61,6 +65,7 @@ public:
   std::string code;
 };
 
+/* the lexer turns the raw input into a list of Tokens */
 class Lexer {
 public:
   Lexer();

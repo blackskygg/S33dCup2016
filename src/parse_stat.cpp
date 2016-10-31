@@ -182,7 +182,7 @@ STAT_PARSER(WhileStat, while)
 
   MK_ORIGIN(str_begin);
   
-  str_begin += 2;
+  str_begin += 2;  //skip while(
   regex_search(str_begin, str_end, m, regex("(.+?)\\)"),
 	       regex_constants::match_continuous);
   parse_expr(m[1].first, m[1].second, POS(m[1].first), stat.expr);
@@ -199,10 +199,10 @@ STAT_PARSER(DoStat, do)
 
   MK_ORIGIN(str_begin);
   
-  ++str_begin;
+  ++str_begin;  //skip do
   str_begin = parse_stat(str_begin, str_end, POS(str_begin), stat.stat);
 
-  str_begin += 2;
+  str_begin += 2; //skip )while
   regex_search(str_begin, str_end, m, regex("(.+?)\\);"),
 	       regex_constants::match_continuous);
   parse_expr(m[1].first, m[1].second, POS(m[1].first), stat.expr);
@@ -217,6 +217,7 @@ STAT_PARSER(ExprStat, expr)
 
   MK_ORIGIN(str_begin);
 
+  //Empty statment are also counted as ExprStat, but without output
   if(';' == *str_begin)
     stat.is_empty = true;
   regex_search(str_begin, str_end, m, regex("(.*?);"),
@@ -240,6 +241,13 @@ Parser::parse_stat(string::const_iterator str_begin,
   
   string::const_iterator stat_end;
 
+/* 
+ * the standard process of handling a specify type of statement is:
+ * 1) craate a shared pointer holding a newly allocated instance
+ * 2) call the correspoding parser, passing the instance's reference
+ * 3) assign the parsed instance's pointer to stat_ptr
+ * 4) calculate the new parsing point
+ */
 #define PARSE_STAT(T, v)	{					\
     shared_ptr<T> v##_ptr = make_shared<T>(tokens[origin].linum);	\
     stat_end = PARSER_NAME(v)(str_begin, str_end, origin, *v##_ptr);	\

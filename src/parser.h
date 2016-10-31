@@ -20,13 +20,13 @@ class Scope {
  public:
  Scope() : parent(nullptr) {};
   Scope(Scope* parent) : parent(parent) {};
-  int get_identifier(const std::string& name);
-  void add_identifier(const std::string& name, int val);
-  void mod_identifier(const std::string& name, int val);
+  long long get_identifier(const std::string& name);
+  void add_identifier(const std::string& name, long long val);
+  void mod_identifier(const std::string& name, long long val);
 
  private:
   Scope* parent = nullptr;
-  std::unordered_map<std::string, int> vars;
+  std::unordered_map<std::string, long long> vars;
 };
 
 /* a Result holds the final answer */
@@ -259,6 +259,7 @@ class BreakStat: public Statement {
   void execute(Result &result, Scope& scope);
 };
 
+/* Do .. while loop */
 class DoStat: public Statement {
  public:
   DoStat(int linum) : Statement(linum) {};
@@ -268,6 +269,7 @@ class DoStat: public Statement {
   std::shared_ptr<Statement> stat;
 };
 
+/* print statement, argument list was treated as CommaExpr */
 class PrintStat: public Statement {
  public:
   PrintStat(int linum) : Statement(linum){};
@@ -276,6 +278,7 @@ class PrintStat: public Statement {
   std::shared_ptr<Expression> expr;
 };
 
+/* statements that only contains an expression */
 class ExprStat : public Statement {
  public:
  ExprStat(int linum) : Statement(linum) {};
@@ -285,7 +288,7 @@ class ExprStat : public Statement {
   std::shared_ptr<Expression> expr;
 };
 
-
+/* the Parser parses the token list and calculate the final result */
 class Parser {
  public:
   Parser(std::vector <Token> &tokens);
@@ -302,6 +305,9 @@ class Parser {
 			 size_t origin,
 			 InitDecl& decl);
 
+/* below are parsers for specific types of statements 
+ * the parsers' names are of the form  parse_(type)_stat();
+ */
 #define PARSER_NAME(fn)       parse_##fn##_stat
 #define STAT_PARSER_PROTO(T, fn)				\
   std::string::const_iterator					\

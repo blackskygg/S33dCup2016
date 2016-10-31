@@ -2,9 +2,9 @@
 
 using namespace std;
 
-int Scope::get_identifier(const string& name)
+long long Scope::get_identifier(const string& name)
 {
-  unordered_map<string, int>::iterator it;
+  unordered_map<string, long long>::iterator it;
 
   if ((vars.end() == (it = vars.find(name))) && (parent != NULL))
     return parent->get_identifier(name);
@@ -12,9 +12,9 @@ int Scope::get_identifier(const string& name)
     return it->second;
 }
 
-void Scope::mod_identifier(const string& name, int val)
+void Scope::mod_identifier(const string& name, long long val)
 {
-  unordered_map<string, int>::iterator it;
+  unordered_map<string, long long>::iterator it;
   
   if ((vars.end() == (it = vars.find(name))) && (parent != NULL))
     parent->mod_identifier(name, val);
@@ -22,7 +22,7 @@ void Scope::mod_identifier(const string& name, int val)
     vars[name] = val;
 }
 
-void Scope::set_identifier(const string& name, int val)
+void Scope::add_identifier(const string& name, long long val)
 {
   vars[name] = val;
 }
@@ -48,6 +48,10 @@ void Result::print(ofstream& ofs)
 
 Parser::Parser(vector <Token> &tokens): tokens(tokens)
 {
+  /* we use this code map to encode the tokens list into a string
+   * so that we can use regular expression 
+   * to simply the state machine construction
+  */
   code_map[Token::INT_TYPE] = 'i';
   code_map[Token::FOR] = 'f';
   code_map[Token::IF] = '?';
@@ -80,6 +84,9 @@ Parser::Parser(vector <Token> &tokens): tokens(tokens)
   code_map[Token::SEMICOLON] = ';';
   code_map[Token::STRING_LITERAL] = 's';
 
+  /* since we've encoded the token list, 
+   * we can now use normal regex to handle them
+   */
 #define EXPR_TPL(T, R) expr_tpls.push_back(make_pair(Expression::T, regex(R)))
   EXPR_TPL(COMMA, "(.+),(.+)");
   EXPR_TPL(ASSIGNMENT, "(.+?)=(.+)");
@@ -104,10 +111,9 @@ void Parser::parse(Result& result)
 {
   string s;
   Scope global;
-  CompoundStat stat(1);
+  CompoundStat stat(1); //we see the whole program as a big CompoundStat
   
   encode_tokens(tokens, s);
   parse_stat_list(s.cbegin(), s.cend(), 0, stat.stat_list);
-  stat.print();
   stat.execute(result, global);
 }

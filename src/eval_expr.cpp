@@ -2,6 +2,8 @@
 
 using namespace std;
 
+/* below are expression evaluators */
+
 long long CommaExpr:: eval(Scope& scope)
 {
   return expr1->eval(scope), expr2->eval(scope);

@@ -2,6 +2,12 @@
 
 using namespace std;
 
+/* below are statement executors 
+ * we try handle it naturally, 
+ * say, use "for" to mimic "for" and "while" to handle "while"
+ * so that the behavior of the output would be exactly the same with C
+ */
+
 void DeclStat::execute(Result& result, Scope& scope)
 {
   if (has_init) result.add_line(linum);

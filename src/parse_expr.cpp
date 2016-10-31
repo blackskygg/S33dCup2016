@@ -8,8 +8,9 @@ void Parser::parse_expr(string::const_iterator str_begin,
 			shared_ptr<Expression>& expr)
 {
   smatch m;
-  Expression::ExprType type = Expression::PRIMARY;
+  Expression::ExprType type = Expression::PRIMARY; //we see empty expr as primay
 
+  /* search for the best match */
   for (auto tpl: expr_tpls) {
     if (regex_search(str_begin, str_end, m, tpl.second,
 		     regex_constants::match_continuous))
@@ -19,6 +20,12 @@ void Parser::parse_expr(string::const_iterator str_begin,
       }
   }
 
+  /* 
+   * the standard process for parsing an expression is:
+   * 1) the regex has already extracted the important parts
+   * 2) allocate an new instance and fill it with the extracted parts
+   * 3) assign argument "expr" to the pointer to the newly allocated pointer
+   */
 #define POS(n)	(m[(n)].first - str_begin + origin)
 #define PARSE_EXPR(n, expr)						\
   parse_expr(m[(n)].first, m[(n)].second, POS(n), expr);
@@ -91,13 +98,14 @@ void Parser::parse_expr(string::const_iterator str_begin,
   case Expression::PRIMARY:
     if (m[0].str() == "n") {
       shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst> \
-	(atoi(tokens[POS(1)].code.c_str()));
+	(atoll(tokens[POS(1)].code.c_str()));
       expr = dynamic_pointer_cast<Expression>(prim_ptr);
     } else if (m[1].str() == "a"){
       shared_ptr<PrimaryExprId> prim_ptr = make_shared<PrimaryExprId>	\
 	(tokens[POS(1)].code);
       expr = dynamic_pointer_cast<Expression>(prim_ptr);
     } else {
+      // empty expr, string and other possiblities are treated as const 1
       shared_ptr<PrimaryExprConst> prim_ptr = make_shared<PrimaryExprConst>(1);
       expr = dynamic_pointer_cast<Expression>(prim_ptr);
     }
