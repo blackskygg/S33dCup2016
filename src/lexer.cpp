@@ -3,10 +3,6 @@
 
 using namespace std;
 
-void Token::print() {
-  cout << code << endl;
-}
-
 Lexer::Lexer()
 {
   /* supported tokens and their patterns */

@@ -58,7 +58,6 @@ public:
   
  Token(TokenType type, int linum, std::string code):
   type(type), linum(linum), code(code) {};
-  void print();
 
   TokenType type;
   int linum;
