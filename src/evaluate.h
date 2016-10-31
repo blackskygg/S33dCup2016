@@ -9,7 +9,7 @@ struct scope_record {
     // NULL key represents scope sentinel
     char *					key;
     size_t					len;
-    int						val;
+    long long				val;
     struct scope_record *	prev;
 };
 
