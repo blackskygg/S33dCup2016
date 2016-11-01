@@ -1,38 +1,75 @@
-int a, b = 1;
-a = 1;
-
-printf("output: %d\n", a++);
-
-/*  a = 2
- *  b = 1
- */
-
-if (a > 1) {
-    a = b + 2 - 3 * 4 / 5;
-} else if (a + b == 2) {
-    printf("output: %d\n", b++);
-} else {
-    ;
+25;
+int askdjiw=10;
+"allahu" "akbar";
+int p=0;
+p++;p--;
+if(p==0)
+    printf("ln 7");
+p=+p;
+if(p==0)
+    printf("ln 10");
+p=-p;
+if(p==0)
+    printf("ln 13");
+p=10;
+p=p*p;
+if(p==100){
+    printf("ln 17");
 }
-
-while (b, a <= 10) {
-    int b = 2;
-    printf("%d\n", a);
-    a++;
+p=p/p;
+if(p==0)
+    printf("ln 21 should not appear");
+else
+    printf("ln 23 should.");
+if(p==1)
+    printf("ln 21%d",p=127+p);
+if(p==128)
+    printf("ln 23%d",p=128-p);
+if(p==0){
+    printf("ln 25");
 }
-
-// a = 11, b = 2
-
+while (p<25)
+    p++;
+while(p<=25) p++;
 do {
-    b -= 1;
-} while (b);
+    p--;
+}while(p>0);
 
-/* a = 11, b = 0 */
-
-for (int a = 4, b = 3, c = 5, d = 2; a + b*2 < c + d; a = a - b, b++, c--) {
-    ;
+for(;;) {printf("program should not die here.");
+        break;
 }
-
-while (1) {
-    break;
+//testing.
+/* still testing. */
+;;;;;
+;
+;
+;
+for(k = 0;k<=51;k++){
+    if(k==50){
+        printf("appear only once.");
+        break;    
+    }
 }
+{
+    //new scope
+    int k=25;
+}
+if(k==25)
+    printf("program boomed.");
+if(k==50)
+    printf("yeah.");
+while(k!=100) k++;
+if(k==100);
+    printf("yeah.");
+//Compound expressions.
+int c=p+++ +k;
+int d=p+++-k;
+if(c==100){
+    if(d==-99)
+        if(p==2)
+            printf("sure.");
+}
+int a=1,b=1,c=1;
+d=a+++b+++c++;
+if(d==3)
+    printf("yeah.")
