@@ -72,4 +72,33 @@ if(c==100){
 int a=1,b=1,c=1;
 d=a+++b+++c++;
 if(d==3)
-    printf("yeah.")
+    printf("yeah.");
+//Extreme tests.
+do {
+  ;
+  ;
+  ;
+  for(int a = 1; a < 2; a++) {
+    for(int b = 1; b < 3; b++);
+  }
+
+  for(int a = 1; a < 2; a++) {
+    for(int b = 1; b < 3; b++)for(int c = 1; c < 8; c++);
+    break;
+  }
+
+  if(a == 2)
+    break;
+}while(c++ < 65);;
+
+/*
+c = 66;
+*/
+
+do for(;;)break;
+while(c++ < 66);
+
+/*
+c = 67;
+*/
+
