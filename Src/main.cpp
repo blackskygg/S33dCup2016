@@ -6,7 +6,7 @@
 using namespace std;
 
 /* read the raw content from file */
-string read_file(char *fn)
+string read_file(const char *fn)
 {
   ifstream ifs(fn, ios::binary);
   ostringstream ostrm;
@@ -19,10 +19,7 @@ string read_file(char *fn)
 
 int main(int argc, char *argv[])
 {
-  if (argc < 2)
-    return 0;
-
-  string buf = read_file(argv[1]);
+  string buf = read_file("input.txt");
 
   /* stage one: tokenize */
   Lexer lexer;
