@@ -14,7 +14,7 @@ string read_file(char *fn)
   ostrm << ifs.rdbuf();
   return ostrm.str();
 }
-    
+
 
 
 int main(int argc, char *argv[])
@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
   vector<Token> tokens;
   lexer.scan(buf, tokens);
 
-  /* stage two: parsing 
-   * this stage includes generating the result 
+  /* stage two: parsing
+   * this stage includes generating the result
    */
   Parser parser(tokens);
   Result result;
@@ -39,6 +39,6 @@ int main(int argc, char *argv[])
   /* stage tree: output */
   ofstream ofs("output.txt");
   result.print(ofs);
-  
+
   return 0;
 }

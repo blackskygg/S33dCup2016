@@ -74,35 +74,35 @@ int Lexer::scan(string s, vector<Token>& result)
     //search for best match
     for (auto tpl: token_tpls) {
       if (regex_search(str_begin, str_end, m, tpl.second,
-		       regex_constants::match_continuous)
-	  && m[0].length() > max_len)
-	{
-	  best_match = m[0];
-	  max_len = m[0].length();
-	  type = tpl.first;
-	}
+            regex_constants::match_continuous)
+          && m[0].length() > max_len)
+      {
+        best_match = m[0];
+        max_len = m[0].length();
+        type = tpl.first;
+      }
     }
 
     if (!max_len) break;
     else str_begin += max_len;
-    
+
     // increase the linum accordingly
     if (Token::CRLF == type) ++linum;
     else if (Token::COMMENT == type) linum += count_crlf(best_match.str());
 
     /* Ignore blank crlf and comments
-     * And if encountered with consequtive string listerals, 
+     * And if encountered with consequtive string listerals,
      * only push the first one to handle the "string" "string" concating syntax
      */
     if (type == Token::CRLF || type == Token::COMMENT || type == Token::BLANK
-	|| (type == Token::STRING_LITERAL
-	    && last_type == Token::STRING_LITERAL)) {
+        || (type == Token::STRING_LITERAL
+          && last_type == Token::STRING_LITERAL)) {
       continue;
     } else {
       last_type = type;
       result.push_back(Token(type, linum, best_match.str()));
     }
-    
+
   }
 
   return 0;

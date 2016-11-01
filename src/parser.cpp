@@ -15,7 +15,7 @@ long long Scope::get_identifier(const string& name)
 void Scope::mod_identifier(const string& name, long long val)
 {
   unordered_map<string, long long>::iterator it;
-  
+
   if ((vars.end() == (it = vars.find(name))) && (parent != NULL))
     parent->mod_identifier(name, val);
   else
@@ -37,7 +37,7 @@ void Result::add_line(int linum) {
 void Result::print(ofstream& ofs)
 {
   if (0 == lines.size()) return;
-  
+
   int n = lines.back();
   lines.pop_back();
   for(auto ln: lines)
@@ -46,12 +46,12 @@ void Result::print(ofstream& ofs)
 }
 
 
-Parser::Parser(vector <Token> &tokens): tokens(tokens)
+Parser::Parser(vector <Token> &tokens) : tokens(tokens)
 {
   /* we use this code map to encode the tokens list into a string
-   * so that we can use regular expression 
+   * so that we can use regular expression
    * to simply the state machine construction
-  */
+   */
   code_map[Token::INT_TYPE] = 'i';
   code_map[Token::FOR] = 'f';
   code_map[Token::IF] = '?';
@@ -84,7 +84,7 @@ Parser::Parser(vector <Token> &tokens): tokens(tokens)
   code_map[Token::SEMICOLON] = ';';
   code_map[Token::STRING_LITERAL] = 's';
 
-  /* since we've encoded the token list, 
+  /* since we've encoded the token list,
    * we can now use normal regex to handle them
    */
 #define EXPR_TPL(T, R) expr_tpls.push_back(make_pair(Expression::T, regex(R)))
@@ -102,7 +102,7 @@ Parser::Parser(vector <Token> &tokens): tokens(tokens)
 
 void Parser::encode_tokens(std::vector <Token>& tokens, string &s)
 {
-  for (auto token: tokens) 
+  for (auto token: tokens)
     s.push_back(code_map[token.type]);
 }
 
@@ -112,7 +112,7 @@ void Parser::parse(Result& result)
   string s;
   Scope global;
   CompoundStat stat(1); //we see the whole program as a big CompoundStat
-  
+
   encode_tokens(tokens, s);
   parse_stat_list(s.cbegin(), s.cend(), 0, stat.stat_list);
   stat.execute(result, global);

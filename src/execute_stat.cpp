@@ -2,8 +2,8 @@
 
 using namespace std;
 
-/* below are statement executors 
- * we try handle it naturally, 
+/* below are statement executors
+ * we try handle it naturally,
  * say, use "for" to mimic "for" and "while" to handle "while"
  * so that the behavior of the output would be exactly the same with C
  */
@@ -11,7 +11,7 @@ using namespace std;
 void DeclStat::execute(Result& result, Scope& scope)
 {
   if (has_init) result.add_line(linum);
-  
+
   for (auto e: decl_list)
     e.eval(scope);
 }
@@ -26,24 +26,28 @@ void SelectStat::execute(Result& result, Scope& scope)
 void ForStat::execute(Result& result, Scope& scope)
 {
   Scope new_scp(&scope);
-  
+
   if (has_decl) decl.execute(result, new_scp);
   else expr[0]->eval(new_scp);
 
   for (result.add_line(linum);
-       result.add_line(linum), expr[1]->eval(new_scp);
-       result.add_line(linum), expr[2]->eval(new_scp))
-    {
-      try { stat->execute(result, new_scp); }
-      catch (BreakException e) { break; }
+      result.add_line(linum), expr[1]->eval(new_scp);
+      result.add_line(linum), expr[2]->eval(new_scp))
+  {
+    try { stat->execute(result, new_scp); }
+    catch (BreakException e) {
+      break;
     }
+  }
 }
 
 void WhileStat::execute(Result& result, Scope& scope)
 {
   while(result.add_line(linum), expr->eval(scope)) {
     try { stat->execute(result, scope); }
-    catch (BreakException e) { break; }
+    catch (BreakException e) {
+      break;
+    }
   }
 }
 
@@ -51,7 +55,9 @@ void DoStat::execute(Result& result, Scope& scope)
 {
   do {
     try { stat->execute(result, scope); }
-    catch (BreakException e) { break; }
+    catch (BreakException e) {
+      break;
+    }
   } while(result.add_line(linum), expr->eval(scope));
 }
 

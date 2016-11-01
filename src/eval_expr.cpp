@@ -66,16 +66,20 @@ long long PostfixExpr:: eval(Scope& scope)
   return val;
 }
 
-long long PrimaryExprConst:: eval(Scope& scope) {return val;}
+long long PrimaryExprConst:: eval(Scope& scope) {
+  return val;
+}
 
-long long PrimaryExprId:: eval(Scope& scope) {return scope.get_identifier(id);}
+long long PrimaryExprId:: eval(Scope& scope) {
+  return scope.get_identifier(id);
+}
 
 long long AssignmentExpr::eval(Scope& scope)
 {
   long long val = expr->eval(scope);
 
   scope.mod_identifier(id, val);
-  
+
   return val;
 }
 
@@ -84,6 +88,6 @@ long long InitDecl::eval(Scope& scope)
   long long val = expr->eval(scope);
 
   scope.add_identifier(id, val);
-  
+
   return val;
 }
