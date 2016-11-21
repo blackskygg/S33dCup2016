@@ -1,1 +1,1 @@
-# S33dCup2016
+# S33dCup2016 -- A simple C "interpreter".
